@@ -1,0 +1,260 @@
+[gd_scene load_steps=9 format=3 uid="uid://bxe32q67lr32p"]
+
+[ext_resource type="Script" path="res://scenes/label.gd" id="1_7k2ch"]
+
+[sub_resource type="GDScript" id="GDScript_edi2q"]
+script/source = "extends CharacterBody3D
+@onready var collision_shape_3d: CollisionShape3D = $obs_detect/CollisionShape3D
+@onready var camera_3d: Camera3D = $Camera3D
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
+@export var move_speed := 5.0
+@export var look_sensitivity := 0.1
+@export var jump_height: float = 4.0  # Jump height
+@export var gravity: float = -9.8  # Gravity value
+var is_jumping: bool = false  # Track if the player is jumping
+var yaw := 0.0  # Horizontal rotation
+var pitch := 0.0  # Vertical rotation
+enum {
+	IDLE,
+	WALK,
+	RUN,
+	CROUCH,
+}
+var state = WALK
+var crouch_flag:bool = false
+func _ready():
+	
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	Engine.set_physics_ticks_per_second(DisplayServer.screen_get_refresh_rate())
+
+func _input(event):
+	if event is InputEventMouseMotion:
+		yaw -= event.relative.x * look_sensitivity
+		pitch -= event.relative.y * look_sensitivity
+		pitch = clamp(pitch, -80, 80)  # Limit the vertical rotation
+		rotation_degrees.y = yaw
+		camera_3d.rotation_degrees.x = pitch
+	if event.is_action_pressed(\"crouch\"):
+		toggle_crouch()
+	if Input.is_action_pressed(\"exit\"):
+		get_tree().quit()
+		
+func _process(delta):
+	if Input.is_action_pressed(\"tab\"):
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		
+func _physics_process(delta):
+	var direction := Vector3.ZERO
+	match state:
+		WALK:
+			move_speed = 5
+		RUN:
+			pass
+		CROUCH:
+			move_speed = 2
+	if is_on_floor():  # Ensure the player is on the ground before allowing jumps
+		if Input.is_action_just_pressed(\"jump\"):  # Use is_action_just_pressed for one-time input
+			velocity.y = jump_height  # Apply jump velocity
+			is_jumping = true  # Set jumping state to true
+	if not is_on_floor():
+		velocity.y += gravity * delta  # Apply gravity when in the air
+	else:
+		is_jumping = false  # Reset jumping state when on the ground
+	if Input.is_action_pressed(\"forward\"):
+		direction -= transform.basis.z
+	if Input.is_action_pressed(\"backward\"):
+		direction += transform.basis.z
+	if Input.is_action_pressed(\"left\"):
+		direction -= transform.basis.x
+	if Input.is_action_pressed(\"right\"):
+		direction += transform.basis.x
+		
+		
+	# Normalize direction to prevent faster diagonal movement and apply speed
+	if direction != Vector3.ZERO:
+		direction = direction.normalized() * move_speed
+		velocity.x = direction.x
+		velocity.z = direction.z
+	else:
+		velocity.x = 0
+		velocity.z = 0
+	# Apply movement
+	move_and_slide()
+	
+func toggle_crouch():
+	match crouch_flag:
+		true:
+			state = WALK
+			animation_player.play(\"WALK\")
+		false:
+			state = CROUCH
+			animation_player.play(\"CROUCH\")
+	crouch_flag = !crouch_flag
+# Creating RayCast via code.
+"
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_6m5bp"]
+radius = 0.4
+
+[sub_resource type="Animation" id="Animation_1asmq"]
+resource_name = "CROUCH"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CollisionShape3D:shape:height")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [2.0, 1.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CollisionShape3D:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, -0.5, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Camera3D:position")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0.25, 0), Vector3(0, -0.25, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_kpwk5"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CollisionShape3D:shape:height")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [2.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CollisionShape3D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Camera3D:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.25, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_hbxng"]
+resource_name = "WALK"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CollisionShape3D:shape:height")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [1.0, 2.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CollisionShape3D:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, -0.5, 0), Vector3(0, 0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Camera3D:position")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, -0.25, 0), Vector3(0, 0.25, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_njhe7"]
+_data = {
+"CROUCH": SubResource("Animation_1asmq"),
+"RESET": SubResource("Animation_kpwk5"),
+"WALK": SubResource("Animation_hbxng")
+}
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_t08rx"]
+radius = 0.3
+
+[node name="player" type="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+script = SubResource("GDScript_edi2q")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_6m5bp")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+fov = 90.0
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="Control"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+script = ExtResource("1_7k2ch")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_njhe7")
+}
+
+[node name="obs_detect" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="obs_detect"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+shape = SubResource("CylinderShape3D_t08rx")

@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://dngkgux17yf6v"]
+
+[ext_resource type="PackedScene" uid="uid://bxe32q67lr32p" path="res://scenes/player.tscn" id="1_rb4b3"]
+[ext_resource type="Script" path="res://scenes/player_p.gd" id="1_x8kjv"]
+
+[node name="pivot" type="Node3D"]
+script = ExtResource("1_x8kjv")
+
+[node name="player" parent="." instance=ExtResource("1_rb4b3")]
+script = null

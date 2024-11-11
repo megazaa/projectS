@@ -1,0 +1,43 @@
+[gd_scene load_steps=7 format=3 uid="uid://db0jdm624dw4w"]
+
+[ext_resource type="Script" path="res://scenes/throwable_items.gd" id="1_mggyi"]
+
+[sub_resource type="TubeTrailMesh" id="TubeTrailMesh_64cwy"]
+radius = 0.1
+section_length = 0.01
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_772xr"]
+albedo_color = Color(0.540938, 0.540939, 0, 1)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_2btd6"]
+points = PackedVector3Array(0, -0.025, -0.1, -0.0707126, -0.025, -0.0707126, 0, 0.0249951, -0.1, 0.070693, -0.025, -0.0707126, -0.1, -0.025, 0, -0.0707126, 0.0249951, -0.0707126, 0.070693, 0.0249951, -0.0707126, 0.1, -0.025, 0, -0.1, 0.0249951, 0, -0.0707126, -0.025, 0.070693, 0.1, 0.0249951, 0, 0.070693, -0.025, 0.070693, -0.0707126, 0.0249951, 0.070693, 0, -0.025, 0.1, 0.070693, 0.0249951, 0.070693, 0, 0.0249951, 0.1)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_dctba"]
+radius = 0.123223
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_rpocu"]
+radius = 5.0
+
+[node name="throwable_items" type="RigidBody3D"]
+script = ExtResource("1_mggyi")
+
+[node name="coin" type="MeshInstance3D" parent="."]
+mesh = SubResource("TubeTrailMesh_64cwy")
+surface_material_override/0 = SubResource("StandardMaterial3D_772xr")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("ConvexPolygonShape3D_2btd6")
+
+[node name="collision_detect" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="collision_detect"]
+shape = SubResource("SphereShape3D_dctba")
+
+[node name="sound_range" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="sound_range"]
+shape = SubResource("SphereShape3D_rpocu")
+disabled = true
+
+[connection signal="body_entered" from="collision_detect" to="." method="_on_collision_detect_body_entered"]
+[connection signal="body_shape_entered" from="collision_detect" to="." method="_on_collision_detect_body_shape_entered"]

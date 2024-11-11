@@ -1,0 +1,450 @@
+[gd_scene load_steps=11 format=3 uid="uid://bxe32q67lr32p"]
+
+[ext_resource type="Script" path="res://scenes/label.gd" id="1_7k2ch"]
+
+[sub_resource type="GDScript" id="GDScript_edi2q"]
+script/source = "extends CharacterBody3D
+@onready var collision_shape_3d: CollisionShape3D = $obs_detect/CollisionShape3D
+@onready var climb_detector: Area3D = $Camera3D/ClimbDetector
+@onready var camera_3d: Camera3D = $Camera3D
+@onready var max_climb_detector: RayCast3D = $max_climb_detector
+@onready var min_climb_detector: RayCast3D = $min_climb_detector
+@onready var pivot: Node3D = $\"..\"
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
+@export var move_speed := 5.0
+@export var look_sensitivity := 0.1
+@export var jump_height: float = 4.0  # Jump height
+@export var climb_height: float = 1.5     # How high the player climbs
+@export var climb_speed: float = 2.0      # Speed of climbing
+@export var gravity: float = -9.8  # Gravity value
+@export var min_rotation: float = -0.5  # Minimum rotation in radians
+@export var max_rotation: float = 0.5   # Maximum rotation in radians
+var is_jumping: bool = false  # Track if the player is jumping
+var is_climbing = false
+var nearby_climbable = null
+var something_above:bool = false
+var is_peeking:bool = false
+var yaw := 0.0  # Horizontal rotation
+var pitch := 0.0  # Vertical rotation
+enum {
+	PEEK,
+	WALK,
+	RUN,
+	CROUCH,
+}
+@export var state = WALK
+var crouch_flag:bool = false
+func _ready():
+	climb_detector.connect(\"body_entered\", Callable(self, \"_on_climb_detector_body_entered\"))
+	climb_detector.connect(\"body_exited\", Callable(self, \"_on_climb_detector_body_exited\"))
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	Engine.set_physics_ticks_per_second(DisplayServer.screen_get_refresh_rate())
+
+func _input(event):
+	if event is InputEventMouseMotion:
+		yaw -= event.relative.x * look_sensitivity
+		pitch -= event.relative.y * look_sensitivity
+		pitch = clamp(pitch, -80, 80)  # Limit the vertical rotation
+		rotation_degrees.y = yaw
+		camera_3d.rotation_degrees.x = pitch
+	if event.is_action_pressed(\"crouch\"):
+		toggle_crouch()
+	if event.is_action_pressed(\"peek\"):
+		toggle_is_peeking()
+	if Input.is_action_pressed(\"exit\"):
+		get_tree().quit()
+		
+func _process(delta):
+	if Input.is_action_pressed(\"tab\"):
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		
+func _physics_process(delta):
+	var collider = min_climb_detector.get_collider()
+	#if collider:
+		#var collider_center = collider.global_transform.origin
+		#print(collider_center)
+	
+	var direction := Vector3.ZERO
+	match state:
+		WALK:
+			move_speed = 5
+		RUN:
+			pass
+		CROUCH:
+			move_speed = 2
+	#print(state)
+	if is_on_floor():  # Ensure the player is on the ground before allowing jumps
+		if Input.is_action_just_pressed(\"jump\") and something_above == false:  # Use is_action_just_pressed for one-time input
+			velocity.y = jump_height  # Apply jump velocity
+			is_jumping = true  # Set jumping state to true
+	if not is_on_floor():
+		velocity.y += gravity * delta  # Apply gravity when in the air
+	else:
+		is_jumping = false  # Reset jumping state when on the ground
+	if Input.is_action_pressed(\"forward\"):
+		direction -= transform.basis.z
+	if Input.is_action_pressed(\"backward\"):
+		direction += transform.basis.z
+	if Input.is_action_pressed(\"left\"):
+		direction -= transform.basis.x
+	if Input.is_action_pressed(\"right\"):
+		direction += transform.basis.x
+	rotate_player(delta)
+		
+	# Normalize direction to prevent faster diagonal movement and apply speed
+	if direction != Vector3.ZERO:
+		direction = direction.normalized() * move_speed
+		velocity.x = direction.x
+		velocity.z = direction.z
+	else:
+		velocity.x = 0
+		velocity.z = 0
+	# Apply movement
+	if nearby_climbable and Input.is_action_just_pressed(\"jump\") and not is_climbing and min_climb_detector.get_collider() != null:
+		climb_to_box(nearby_climbable)
+	move_and_slide()
+	
+
+
+func _on_obs_detect_body_entered(body: Node3D) -> void:
+	something_above = true
+func _on_obs_detect_body_exited(body: Node3D) -> void:
+	something_above = false
+
+
+func _on_climb_detector_body_entered(body: Node3D) -> void:
+	# Check if the object entering the area is climbable
+	if body.is_in_group(\"climbable\"):
+		nearby_climbable = body
+		print(\"Can climb!\")
+
+func _on_climb_detector_body_exited(body: Node3D) -> void:
+	if body == nearby_climbable:
+		nearby_climbable = null
+		print(\"Cannot climb.\")
+	
+
+func climb_to_box(target_box):
+	# Player is climbing. This variable prevents hiccups along the process of climbing.
+	is_climbing = true
+	
+	# First Tween animation will make player move up.
+	var vertical_climb = Vector3(global_transform.origin.x, min_climb_detector.get_collision_point().y +1, global_transform.origin.z)
+	# If your player controller's pivot is located in the middle use this: 
+	# var vertical_climb = Vector3(global_transform.origin.x, (place_to_land.position.y + collision_shape.shape.height / 2), global_transform.origin.z)
+	var vertical_tween = get_tree().create_tween().set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_IN)
+	vertical_tween.tween_property(self, \"global_transform:origin\", vertical_climb, 0.4)
+	
+	# We wait for the animation to finish.
+	await vertical_tween.finished
+	
+	# Second Tween animation will make the player move forward where the player is facing.
+	var forward = global_transform.origin + (-self.basis.z * 1)
+	var forward_tween = get_tree().create_tween().set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_IN_OUT)
+	forward_tween.tween_property(self, \"global_transform:origin\", forward, 0.2)
+	
+	# We wait for the animation to finish.
+	await forward_tween.finished
+	
+	# Player isn't climbing anymore.
+	is_climbing = false
+
+func rotate_player(delta: float) -> void:
+	if is_peeking:
+		print(\"PEEK\")
+		var mouse_delta = Input.get_last_mouse_velocity()# Rotate around the Y-axis only (left and right)
+		rotation.z -= mouse_delta.x * look_sensitivity * delta *0.2
+		rotation.z = clamp(rotation.z, min_rotation, max_rotation)
+	elif !is_peeking:
+		print(\"NOPE\")
+		pivot.rotation.z = 0
+	
+	
+	
+func toggle_is_peeking():
+	if is_peeking:
+		print(\"PEEK\")
+	elif !is_peeking:
+		print(\"NOPE\")
+	is_peeking = !is_peeking
+
+func toggle_crouch():
+	match crouch_flag:
+		true:
+			state = WALK
+			animation_player.play(\"WALK\")
+		false:
+			state = CROUCH
+			animation_player.play(\"CROUCH\")
+	crouch_flag = !crouch_flag
+"
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_6m5bp"]
+radius = 0.4
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hgqmd"]
+size = Vector3(0.810932, 1.52631, 0.674881)
+
+[sub_resource type="Animation" id="Animation_1asmq"]
+resource_name = "CROUCH"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CollisionShape3D:shape:height")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [2.0, 1.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CollisionShape3D:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, -0.5, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Camera3D:position")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 1.25, 0), Vector3(0, 0.75, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_kpwk5"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CollisionShape3D:shape:height")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [2.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CollisionShape3D:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Camera3D:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.5, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 1, 0)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath(".:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("pivot:rotation")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0.001),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_hbxng"]
+resource_name = "WALK"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CollisionShape3D:shape:height")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [1.0, 2.0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CollisionShape3D:position")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, -0.5, 0), Vector3(0, 0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Camera3D:position")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0.5, 0), Vector3(0, 1.25, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_4bwaf"]
+resource_name = "left_peek"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 1, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("pivot:rotation")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0, 0.523599)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_njhe7"]
+_data = {
+"CROUCH": SubResource("Animation_1asmq"),
+"RESET": SubResource("Animation_kpwk5"),
+"WALK": SubResource("Animation_hbxng"),
+"left_peek": SubResource("Animation_4bwaf")
+}
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_t08rx"]
+radius = 0.3
+
+[node name="player" type="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+script = SubResource("GDScript_edi2q")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_6m5bp")
+
+[node name="max_climb_detector" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.998303, 0)
+visible = false
+
+[node name="min_climb_detector" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.644174, -0.627261)
+target_position = Vector3(0, -1.5, 0)
+debug_shape_thickness = 5
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+current = true
+fov = 90.0
+
+[node name="ClimbDetector" type="Area3D" parent="Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.00395054)
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="Camera3D/ClimbDetector"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.284)
+shape = SubResource("BoxShape3D_hgqmd")
+
+[node name="pivot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="Control"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+script = ExtResource("1_7k2ch")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_njhe7")
+}
+
+[node name="obs_detect" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="obs_detect"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.02768, 0)
+shape = SubResource("CylinderShape3D_t08rx")
+
+[connection signal="body_entered" from="Camera3D/ClimbDetector" to="." method="_on_climb_detector_body_entered"]
+[connection signal="body_exited" from="Camera3D/ClimbDetector" to="." method="_on_climb_detector_body_exited"]
+[connection signal="body_entered" from="obs_detect" to="." method="_on_obs_detect_body_entered"]
+[connection signal="body_exited" from="obs_detect" to="." method="_on_obs_detect_body_exited"]

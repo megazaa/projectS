@@ -1,0 +1,40 @@
+[gd_scene load_steps=7 format=3 uid="uid://csnv44tpml20o"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_geq0l"]
+albedo_color = Color(0.14, 0.14, 0.14, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_oxndq"]
+material = SubResource("StandardMaterial3D_geq0l")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_235lr"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7sv0r"]
+size = Vector3(1, 0.150117, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_obk0b"]
+albedo_color = Color(0.975961, 0.491846, 5.77569e-07, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_fmoxy"]
+material = SubResource("StandardMaterial3D_obk0b")
+size = Vector3(1, 0.05, 1)
+
+[node name="wall" type="MeshInstance3D"]
+mesh = SubResource("BoxMesh_oxndq")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." groups=["climbable"]]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("BoxShape3D_235lr")
+
+[node name="climb" type="Area3D" parent="."]
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="climb"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.424556, 0)
+shape = SubResource("BoxShape3D_7sv0r")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="climb"]
+transform = Transform3D(1.00242, 0, 0, 0, 2.55376, 0, 0, 0, 1.00242, 0, 0.423126, 0)
+layers = 3
+mesh = SubResource("BoxMesh_fmoxy")
