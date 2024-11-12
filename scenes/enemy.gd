@@ -93,8 +93,7 @@ func is_pursuiting(delta):
 	var next_pos = nav_agent.get_next_path_position()
 	var change_dir = (next_pos - enemy_pos).normalized()
 	velocity = change_dir*SPEED*delta
-	#smoot_rotate(delta*10,Global.player_current_pos)
-	smoot_rotate(delta*10,change_dir)
+	smoot_rotate(delta*10,Global.player_current_pos)
 func is_finding(delta):
 	print("last_seen_pos",last_seen_pos)
 	var facing_dir 
