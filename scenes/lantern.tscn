@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://bqtxqrua1aq1k"]
+
+[node name="lantern" type="CSGCylinder3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.182617, 0)
+radius = 0.227
+height = 0.851859
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.192017, 0.0115818, 0.00381482)
+operation = 2
+size = Vector3(1.73657, 0.246582, 1.45862)
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+light_color = Color(1, 0.721569, 0.415686, 1)
+shadow_enabled = true
+shadow_reverse_cull_face = true
+shadow_opacity = 0.9
+omni_range = 10.0
+omni_attenuation = 2.0

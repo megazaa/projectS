@@ -4,6 +4,7 @@ extends CharacterBody3D
 @onready var fov_ray: RayCast3D = $fov_ray
 @onready var nav_agent: NavigationAgent3D = $nav_agent
 @onready var enemy: CharacterBody3D = $"."
+@onready var get_foot_sound: AudioStreamPlayer3D = $player_sound_manager/AudioStreamPlayer3D
 
 enum {
 	idle,
@@ -15,10 +16,17 @@ var all_point:PackedVector3Array = []
 var next_point =1
 @export var SPEED = 100
 @export var neg_pos = 1
+var sound_num = 1
+var foot_sound_vol = 1
+var walk_sound_scale = 1
+var current_step = 1
+var footstep_timer = 1
 var seen_player = false
 var in_pursuit = false
 var is_at_point = false
 var in_finding = false
+var random:float
+@export var walk_sound  = 1
 @export var duration = 0.5
 @export var find_chance = 0.5
 var last_seen_pos:Vector3
@@ -29,20 +37,30 @@ func _ready() -> void:
 	for x in get_parent().get_node("guard_position_points").get_children():
 		all_point.append(x.global_position + Vector3(0,1,0))
 	print(all_point)
-
 func _physics_process(delta: float) -> void:
-	
+	if footstep_timer >= 120/walk_sound_scale:
+		#added, checks floor only when we walk
+		print("in?")
+		sound_num = sound_num +1
+		get_walk_sound(sound_num)
+		footstep_timer = 0
 	if is_patrolling_guard:
+		footstep_timer = footstep_timer+1
 		if in_pursuit:
+			walk_sound_scale = 5
 			SPEED = 500
 			Global.enemy_state = "in_pursuit"
 			is_pursuiting(delta)
 		if in_finding:
-			SPEED = 300
+			walk_sound_scale = 3
+			SPEED = 350
 			Global.enemy_state = "in_finding"
+			random_lookat(delta)
 			is_finding(delta)
 		if not in_pursuit and not in_finding:
-			SPEED = 200
+			walk_sound_scale = 2
+			SPEED = 150
+			random_lookat(delta)
 			Global.enemy_state = "is_roaming"
 			is_roaming(delta)
 	if not is_patrolling_guard and not in_pursuit:
@@ -75,7 +93,8 @@ func is_pursuiting(delta):
 	var next_pos = nav_agent.get_next_path_position()
 	var change_dir = (next_pos - enemy_pos).normalized()
 	velocity = change_dir*SPEED*delta
-	smoot_rotate(delta*10,Global.player_current_pos)
+	#smoot_rotate(delta*10,Global.player_current_pos)
+	smoot_rotate(delta*10,change_dir)
 func is_finding(delta):
 	print("last_seen_pos",last_seen_pos)
 	var facing_dir 
@@ -92,24 +111,20 @@ func is_finding(delta):
 	print("self.velocity*Vector3(1,0,1)",self.velocity*Vector3(1,0,1))
 	if nav_agent.distance_to_target() < 1 or self.velocity*Vector3(1,0,1) < Vector3.ONE :
 		print("sadsadas")
-		if randf()<=find_chance:
-			#if nav_agent.distance_to_target() < 1 or nav_agent.velocity or self.velocity*Vector3(1,0,1) < Vector3.ONE:
-				#check_timer.start()
-				#check_timer.timeout.connect(_check_timeout)
-				#var get_map_nav = map_nav.get_navigation_mesh().border_size
-				#print(get_map_nav)
-				sight_check()
-		else:
-			sight_check()
-			print("reach_lat_pos")
-			print("where")
-			check_timer.start()
-			print(check_timer.time_left)
-			check_timer.timeout.connect(_check_timeout)
+		sight_check()
+		print("reach_lat_pos")
+		print("where")
+		check_timer.start()
+		print(check_timer.time_left)
+		check_timer.timeout.connect(_check_timeout)
 func _check_timeout():
 	print("checkTimer finished!")
-	
-	in_finding = false
+	sight_check()
+	if in_pursuit:
+		print("wait wat?")
+		return
+	else:
+		in_finding = false
 	set_target(all_point[next_point])
 
 func back_to_point(delta):
@@ -175,7 +190,8 @@ func _on_nav_agent_target_reached() -> void:
 			next_point = 0
 	if not is_patrolling_guard and not in_pursuit:
 		is_at_point = true
-		
+@onready var head: MeshInstance3D = $head
+
 func sight_check():
 	if seen_player:
 		print("woo")
@@ -183,6 +199,8 @@ func sight_check():
 	if fov_ray.is_colliding():
 		var collider = fov_ray.get_collider()
 		if collider.is_in_group("player"):
+			var camera_h = get_parent().get_node("player/Camera3D").global_position.y
+			head.look_at(Global.player_current_pos*Vector3(1,0,1)+Vector3(0,camera_h,0),Vector3(0,1,0))
 			set_target(Global.player_current_pos)
 			is_patrolling_guard = true
 			in_pursuit = true
@@ -206,19 +224,7 @@ func get_random_point_in_bounds(min: Vector3, max: Vector3) -> Vector3:
 		randf_range(min.z, max.z)
 	)
 	return random_point
-func get_random_nav_point_in_bounds(min: Vector3, max: Vector3) -> Vector3:
-	var min_bound = map_nav.get_aabb().position
-	var max_bound = min_bound + map_nav.get_aabb().size
-	var random_point = get_random_point_in_bounds(min, max)
-	var nav_map_get = map_nav.map_get_regions()
-	var max_attempts = 5
 
-	# Loop until we find a point on the navmesh
-	for attempt in max_attempts:
-		if nav_map_get.is_point_on_mesh(map_nav, random_point):
-			return random_point
-	print("random_point",random_point)
-	return random_point
 func smoot_rotate(delta,target_pos):
 	#var tween = get_tree().create_tween()
 	var posto2d = Vector2(global_position.x,-global_position.z)
@@ -226,6 +232,15 @@ func smoot_rotate(delta,target_pos):
 	var dir_2d = (playerPosto2d - posto2d)
 	var angle = -atan2(dir_2d.x,dir_2d.y)
 	rotation.y = lerp_angle(rotation.y,angle,delta/1)
+func random_lookat(delta):
+	if random > 0.5:
+		print("left")
+		head.rotation.y = lerp_angle(head.rotation.y,deg_to_rad(90.0-17)
+,delta/1)
+	else: 
+		print("right")
+		head.rotation.y = lerp_angle(head.rotation.y,deg_to_rad(-90.0+17)
+,delta/1)
 func get_angle_to_player(enemy: Node3D, player_position: Vector3) -> float:
 	# Get the direction the enemy is facing (forward direction)
 	var enemy_forward = enemy.transform.basis.z.normalized()  # Z-axis is typically the forward direction in Godot's default coordinate system
@@ -238,3 +253,22 @@ func get_angle_to_player(enemy: Node3D, player_position: Vector3) -> float:
 	
 	return angle
 	
+func get_walk_sound(current_step):
+	
+	#will only play footstep sound if player is on the ground
+	if is_on_floor():
+		
+		# f string that grabs the sound file
+		var sound_path =  "res://assets/sound/{type}/{num}.wav"
+		var get_sound = sound_path.format({"type": "stone-steps","num": current_step})
+		get_foot_sound.stream = load(get_sound)
+		get_foot_sound.pitch_scale = randf_range(.6,0.9)
+		get_foot_sound.unit_size = walk_sound_scale
+		get_foot_sound.play()
+		if current_step == 7:
+			sound_num = 1
+		
+
+func _on_timer_timeout() -> void:
+	random = randf()
+	print (random)

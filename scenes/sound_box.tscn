@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://7hq5ls4ih6rs"]
+
+[ext_resource type="AudioStream" uid="uid://ch4bqwvi5omf4" path="res://assets/sound/anime-wow-sound-effect.mp3" id="1_7e0sq"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_caa5a"]
+
+[node name="sound_box" type="Node3D"]
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("1_7e0sq")
+max_db = 1.0
+autoplay = true
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="."]
+mesh = SubResource("BoxMesh_caa5a")

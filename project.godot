@@ -24,6 +24,10 @@ Test="*res://scenes/test.gd"
 
 window/size/initial_position_type=2
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/light_sensor_3d/plugin.cfg")
+
 [global_group]
 
 climbable=""

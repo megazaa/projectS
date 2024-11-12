@@ -1,10 +1,14 @@
-[gd_scene load_steps=7 format=3 uid="uid://df4k86d23dcsc"]
+[gd_scene load_steps=9 format=3 uid="uid://df4k86d23dcsc"]
 
 [ext_resource type="Script" path="res://scenes/enemy.gd" id="1_eyg8k"]
+[ext_resource type="PackedScene" uid="uid://bqtxqrua1aq1k" path="res://scenes/lantern.tscn" id="2_vn8qu"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_mpxsm"]
+radius = 0.243694
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_7304j"]
+radius = 0.25
+height = 0.5
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cdjx3"]
 albedo_color = Color(1, 0, 0, 1)
@@ -15,10 +19,12 @@ size = Vector3(0.5, 0.5, 0.5)
 [sub_resource type="SphereShape3D" id="SphereShape3D_ufmgs"]
 radius = 10.0
 
+[sub_resource type="BoxMesh" id="BoxMesh_w8wrh"]
+size = Vector3(0.1, 0.1, 0.1)
+
 [node name="enemy" type="CharacterBody3D"]
 script = ExtResource("1_eyg8k")
 neg_pos = -1
-find_chance = -5.415
 
 [node name="fov_ray" type="RayCast3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.501483, 0)
@@ -28,14 +34,36 @@ collision_mask = 3
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_mpxsm")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.137268, 0)
+size = Vector3(0.48, 1.72546, 0.312)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="CSGBox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.442816, 0)
+operation = 2
+size = Vector3(0.176331, 0.851563, 1)
+
+[node name="head" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.760182, 0)
 mesh = SubResource("CapsuleMesh_7304j")
 surface_material_override/0 = SubResource("StandardMaterial3D_cdjx3")
 
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.396985, -0.304042)
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="head"]
+transform = Transform3D(0.415, 0, 0, 0, 0.415, 0, 0, 0, 0.415, 0, 0.0129111, -0.304042)
 mesh = SubResource("BoxMesh_h17vd")
+skeleton = NodePath("../..")
+
+[node name="cam_point" type="Node3D" parent="head/MeshInstance3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.266708)
+
+[node name="enemy_FOV" type="Area3D" parent="head"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.760182, 0)
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionPolygon3D" type="CollisionPolygon3D" parent="head/enemy_FOV"]
+transform = Transform3D(-4.37114e-08, 1, -4.37114e-08, 0, -4.37114e-08, -1, -1, -4.37114e-08, 1.91069e-15, -0.00851536, 0.0108428, -0.00624657)
+polygon = PackedVector2Array(-10, 0.528, -10, 3, 0, 0, 0, 0, -10, -3)
 
 [node name="ear" type="Area3D" parent="."]
 collision_mask = 2
@@ -43,23 +71,28 @@ collision_mask = 2
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ear"]
 shape = SubResource("SphereShape3D_ufmgs")
 
-[node name="enemy_FOV" type="Area3D" parent="."]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
-collision_layer = 2
-collision_mask = 2
-
-[node name="CollisionPolygon3D" type="CollisionPolygon3D" parent="enemy_FOV"]
-transform = Transform3D(-4.37114e-08, 1, -4.37114e-08, 0, -4.37114e-08, -1, -1, -4.37114e-08, 1.91069e-15, -0.00851536, 0.0108428, -0.00624657)
-polygon = PackedVector2Array(-10, 0.528, -10, 3, 0, 0, 0, 0, -10, -3)
-
 [node name="nav_agent" type="NavigationAgent3D" parent="."]
+debug_enabled = true
 
 [node name="Timer" type="Timer" parent="."]
-wait_time = 0.2
+wait_time = 5.0
 autostart = true
 
+[node name="player_sound_manager" type="Node3D" parent="."]
+transform = Transform3D(0.405, 0, 0, 0, 0.405, 0, 0, 0, 0.405, 0, 0, 0)
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="player_sound_manager"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.28075, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="player_sound_manager/AudioStreamPlayer3D"]
+visible = false
+mesh = SubResource("BoxMesh_w8wrh")
+
+[node name="lantern" parent="." instance=ExtResource("2_vn8qu")]
+transform = Transform3D(0.405, 0, 0, 0, 0.405, 0, 0, 0, 0.405, 0.198, 0, -0.842274)
+
+[connection signal="body_entered" from="head/enemy_FOV" to="." method="_on_enemy_fov_body_entered"]
+[connection signal="body_exited" from="head/enemy_FOV" to="." method="_on_enemy_fov_body_exited"]
 [connection signal="body_entered" from="ear" to="." method="_on_area_3d_body_entered"]
-[connection signal="body_entered" from="enemy_FOV" to="." method="_on_enemy_fov_body_entered"]
-[connection signal="body_exited" from="enemy_FOV" to="." method="_on_enemy_fov_body_exited"]
 [connection signal="target_reached" from="nav_agent" to="." method="_on_nav_agent_target_reached"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

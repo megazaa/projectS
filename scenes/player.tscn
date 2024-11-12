@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://bxe32q67lr32p"]
+[gd_scene load_steps=16 format=3 uid="uid://bxe32q67lr32p"]
 
 [ext_resource type="Script" path="res://scenes/label.gd" id="1_7k2ch"]
 
@@ -18,8 +18,10 @@ script/source = "extends CharacterBody3D
 @onready var jump_nav: NavigationLink3D = $\"../jumpNav\"
 @onready var camera_3d2: Camera3D = $Control/SubViewportContainer/SubViewport/Camera3D
 @onready var height_detect: RayCast3D = $height_detect
+@onready var floor_detector: Area3D = $floor_detector
+@onready var get_foot_sound: AudioStreamPlayer3D = $player_sound_manager/AudioStreamPlayer3D
 
-@export var move_speed := 5.0
+@export var speed_scale = 1.5
 @export var look_sensitivity := 0.1
 @export var jump_height: float = 4.0  # Jump height
 @export var climb_height: float = 1.5     # How high the player climbs
@@ -30,12 +32,18 @@ script/source = "extends CharacterBody3D
 @export var peek_len: float = 0.5
 @export var duration:float = 0.5
 var is_jumping: bool = false  # Track if the player is jumping
+var move_speed = 5
 var is_climbing = false
 var nearby_climbable = false
 var something_above:bool = false
 var is_peeking:bool = false
+var footstep_timer = 0
+var sound_num = 1
+var walk_sound_scale = 1
 var yaw := 0.0  # Horizontal rotation
 var pitch := 0.0  # Vertical rotation
+var foot_sound_vol = 1
+@export var foot_sound_vol_scale = 1
 var mouse_lock = false
 var can_peek = false
 var is_tweening:bool
@@ -67,18 +75,24 @@ func _input(event):
 		camera_3d.rotation_degrees.x = pitch
 	if event.is_action_pressed(\"crouch\"):
 		toggle_crouch()
-	
 	if Input.is_action_pressed(\"exit\"):
 		get_tree().quit()
 	if event.is_action_pressed(\"throw\"):
-		#pass
 		throw_projectile()
 	if Input.is_action_pressed(\"tab\"):
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	else:			
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
 func _physics_process(delta):
-	camera_3d2.position = Vector3(0,1,-1)
+	#get_foot_sound.global_position = global_position - Vector3(0,collision_player.shape.height/2,0)
+	if footstep_timer >= 120/walk_sound_scale:
+		#added, checks floor only when we walk
+		sound_num ++1
+		get_walk_sound(sound_num)
+		footstep_timer = 0
+	
+	camera_3d2.position = Vector3(0,1,-5)+global_position
 	obs_detect.position = Vector3(0,collision_player.shape.height-1,0)
 	right.position = Vector3(1,0,0)
 	left.position = Vector3(-1,0,0)
@@ -86,13 +100,20 @@ func _physics_process(delta):
 	var direction := Vector3.ZERO
 	match state:
 		WALK:
-			move_speed = 3
+			foot_sound_vol = 1.0
+			walk_sound_scale = 2.5
+			move_speed = 250*speed_scale
 			
 		RUN:
-			move_speed = 5
+			foot_sound_vol = 1.2
+			walk_sound_scale = 5
+			move_speed = 500*speed_scale
 			
 		CROUCH:
-			move_speed = 1
+			foot_sound_vol = 0.8
+			#get_foot_sound.global_position = global_position - Vector3(0,collision_player.shape.height+0.5 ,0)
+			walk_sound_scale = 1
+			move_speed = 100*speed_scale
 			
 	#print(state)
 	if is_on_floor():  # Ensure the player is on the ground before allowing jumps
@@ -118,22 +139,27 @@ func _physics_process(delta):
 		state = CROUCH
 	if Input.is_action_pressed(\"shift\") and crouch_flag != true:
 		state = RUN
-	elif state != CROUCH: state = WALK
+	elif state != CROUCH: 
+		state = WALK
 	if Input.is_action_just_pressed(\"peek_left\")  and  abs(pitch) < 20 and can_peek:
 		toggle_is_peeking(delta,\"peek_left\")
 	if Input.is_action_just_pressed(\"peek_right\") and  abs(pitch) < 20 and can_peek:
 		toggle_is_peeking(delta,\"peek_right\")
 	# Normalize direction to prevent faster diagonal movement and apply speed
 	if direction != Vector3.ZERO:
-		direction = direction.normalized() * move_speed
+		footstep_timer += 1
+		direction = direction.normalized() * move_speed * delta
 		velocity.x = direction.x
 		velocity.z = direction.z
 	else:
 		velocity.x = 0
 		velocity.z = 0
 	# Apply movement
-	if nearby_climbable and Input.is_action_just_pressed(\"jump\") and Input.is_action_pressed(\"forward\") and not is_climbing and min_climb_detector.get_collider() != null and not something_above:
+	if min_climb_detector.collide_with_bodies:
+		height_detect.global_position =  min_climb_detector.get_collision_point()
+	if Input.is_action_just_pressed(\"jump\") and Input.is_action_pressed(\"forward\") and not is_climbing and min_climb_detector.get_collider() != null and not something_above:
 		print(\"head_checker\",head_checker())
+		
 		if not head_checker():
 			climb_to_box()
 	move_and_slide()
@@ -150,19 +176,13 @@ func _on_obs_detect_body_exited(body: Node3D) -> void:
 
 
 func _on_climb_detector_body_entered(body: Node3D) -> void:
-	if body.is_in_group(\"climbable\"):
-		nearby_climbable = true
 	can_peek = true
 
 func _on_climb_detector_body_exited(body: Node3D) -> void:
-	if body.is_in_group(\"climbable\"):
-		nearby_climbable = false
 	can_peek = false
 
 func climb_to_box():
 	is_climbing = true
-	
-	
 	# First Tween animation will make player move up.
 	var vertical_climb = Vector3(global_transform.origin.x, min_climb_detector.get_collision_point().y + collision_player.shape.height/2, global_transform.origin.z)
 	# If your player controller's pivot is located in the middle use this: 
@@ -277,7 +297,6 @@ func toggle_is_peeking(delta,peek):
 				mouse_lock = true
 				print(\"peek_right\")
 				await  tweenk_right.finished
-				tweenk_right.kill()
 		print(global_basis)
 		print(\"Current rotation.z: \", camera_3d.rotation.z)
 			
@@ -292,36 +311,40 @@ func toggle_crouch():
 	crouch_flag = !crouch_flag
 	
 func throw_projectile():
-	# Create an instance of the projectile
 	var projectile_instance = Projectile.instantiate()
-	
-	# Set the projectile's starting position and rotation based on the character
 	projectile_instance.global_transform = center.global_transform
-	
-	# Add projectile to the scene
 	get_parent().add_child(projectile_instance)
-	
-	# Set an initial velocity or apply impulse
 	var throw_direction = -camera_3d.global_basis.z
 	projectile_instance.linear_velocity = throw_direction * 10  # Adjust speed as needed
 	projectile_instance.angular_velocity = projectile_instance.rotation
 	projectile_instance.add_collision_exception_with(self)
 	projectile_instance.add_collision_exception_with(min_climb_detector)
 	print(-camera_3d.global_basis.z)
+	
 func head_checker() -> bool:
-	#var query = PhysicsRayQueryParameters3D.create(min_climb_detector.get_collision_point(),min_climb_detector.get_collision_point()*Vector3(1,0,1)+Vector3(0,collision_player.shape.height,0),2)
-	#var collision = get_world_3d().direct_space_state.intersect_ray(query)
-	#print(query.collide_with_areas)
-	#print(query.collide_with_bodies)
 	height_detect.enabled = true
 	height_detect.target_position = Vector3(0,collision_player.shape.height,0)
-	height_detect.global_position =  min_climb_detector.get_collision_point()
 	if (height_detect.is_colliding()):
 		print(\"awo\")	
 	#height_detect.enabled = false
 	return height_detect.is_colliding()
-		
 	
+func get_walk_sound(current_step):
+	
+	#will only play footstep sound if player is on the ground
+	if is_on_floor():
+		
+		# f string that grabs the sound file
+		var sound_path =  \"res://assets/sound/{type}/{num}.wav\"
+		var get_sound = sound_path.format({\"type\": \"stone-steps\",\"num\": current_step})
+		get_foot_sound.stream = load(get_sound)
+		get_foot_sound.pitch_scale = randf_range(.6,0.9)
+		get_foot_sound.pitch_scale = randf_range(1.6,2.9)
+		get_foot_sound.unit_size = foot_sound_vol
+		get_foot_sound.play()
+		if current_step == 7:
+			sound_num = 1
+		
 "
 
 [sub_resource type="BoxMesh" id="BoxMesh_anifq"]
@@ -330,9 +353,6 @@ size = Vector3(0.2, 0.2, 0.2)
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_6m5bp"]
 radius = 0.3
 height = 1.75
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_hgqmd"]
-size = Vector3(0.810932, 1.52631, 0.759804)
 
 [sub_resource type="BoxMesh" id="BoxMesh_6xk6o"]
 size = Vector3(0.01, 0.01, 0.01)
@@ -583,12 +603,19 @@ _data = {
 height = 0.495025
 radius = 0.3
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_hgqmd"]
+size = Vector3(0.298083, 1.14196, 0.759804)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vum5q"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_3f1wh"]
+size = Vector3(0.1, 0.1, 0.1)
+
 [node name="player" type="CharacterBody3D" groups=["player"]]
 collision_layer = 2
 script = SubResource("GDScript_edi2q")
 
 [node name="height_detect" type="RayCast3D" parent="."]
-enabled = false
 target_position = Vector3(0, 1, 0)
 hit_from_inside = true
 
@@ -605,13 +632,6 @@ shape = SubResource("CapsuleShape3D_6m5bp")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.875, -0.703)
 target_position = Vector3(0, -1.75, 0)
 debug_shape_thickness = 5
-
-[node name="peekDetector" type="Area3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.00395054)
-
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="peekDetector"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.326461)
-shape = SubResource("BoxShape3D_hgqmd")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
@@ -649,12 +669,14 @@ size = Vector2i(512, 256)
 render_target_update_mode = 4
 
 [node name="Camera3D" type="Camera3D" parent="Control/SubViewportContainer/SubViewport"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.253758, 2.31785)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0.253758, 2.31785)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
 "": SubResource("AnimationLibrary_njhe7")
 }
+
+[node name="Node3D" type="Node3D" parent="."]
 
 [node name="obs_detect" type="Area3D" parent="."]
 collision_layer = 2
@@ -663,9 +685,33 @@ collision_mask = 2
 [node name="CollisionShape3D" type="CollisionShape3D" parent="obs_detect"]
 shape = SubResource("CylinderShape3D_t08rx")
 
-[node name="Node3D" type="Node3D" parent="."]
+[node name="peekDetector" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.00395054)
 
-[connection signal="body_entered" from="peekDetector" to="." method="_on_climb_detector_body_entered"]
-[connection signal="body_exited" from="peekDetector" to="." method="_on_climb_detector_body_exited"]
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="peekDetector"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.012, -0.498192, -0.326)
+shape = SubResource("BoxShape3D_hgqmd")
+
+[node name="floor_detector" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="floor_detector"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.830745, 0)
+shape = SubResource("BoxShape3D_vum5q")
+
+[node name="player_sound_manager" type="Node3D" parent="."]
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="player_sound_manager"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.28075, 0)
+attenuation_model = 1
+unit_size = 0.8
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="player_sound_manager/AudioStreamPlayer3D"]
+visible = false
+mesh = SubResource("BoxMesh_3f1wh")
+
+[node name="AudioListener3D" type="AudioListener3D" parent="player_sound_manager"]
+
 [connection signal="body_entered" from="obs_detect" to="." method="_on_obs_detect_body_entered"]
 [connection signal="body_exited" from="obs_detect" to="." method="_on_obs_detect_body_exited"]
+[connection signal="body_entered" from="peekDetector" to="." method="_on_climb_detector_body_entered"]
+[connection signal="body_exited" from="peekDetector" to="." method="_on_climb_detector_body_exited"]
