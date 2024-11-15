@@ -10,10 +10,32 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.192017, 0.0115818, 0.00381
 operation = 2
 size = Vector3(1.73657, 0.246582, 1.45862)
 
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+visible = false
+skeleton = NodePath("../OmniLight3D/SpotLight3D")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.02691, -9.69336)
+size = Vector3(1, 1, 20.3867)
+
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 light_color = Color(1, 0.721569, 0.415686, 1)
+light_energy = 9.0
 shadow_enabled = true
 shadow_reverse_cull_face = true
 shadow_opacity = 0.9
 omni_range = 10.0
 omni_attenuation = 2.0
+
+[node name="SpotLight3D" type="SpotLight3D" parent="OmniLight3D"]
+visible = false
+light_color = Color(1, 0.721569, 0.415686, 1)
+light_energy = 16.0
+light_indirect_energy = 16.0
+shadow_enabled = true
+shadow_reverse_cull_face = true
+distance_fade_begin = 5.0
+spot_range = 10.0
+spot_attenuation = 2.0
+spot_angle = 89.0
+spot_angle_attenuation = 0.840897

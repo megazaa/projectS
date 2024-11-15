@@ -1,10 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://df4k86d23dcsc"]
+[gd_scene load_steps=15 format=3 uid="uid://df4k86d23dcsc"]
 
 [ext_resource type="Script" path="res://scenes/enemy.gd" id="1_eyg8k"]
 [ext_resource type="PackedScene" uid="uid://bqtxqrua1aq1k" path="res://scenes/lantern.tscn" id="2_vn8qu"]
+[ext_resource type="Texture2D" uid="uid://bl74fvq668y3s" path="res://assets/arts/target.png" id="3_yb7b2"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_mpxsm"]
-radius = 0.243694
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_7304j"]
 radius = 0.25
@@ -22,14 +22,25 @@ radius = 10.0
 [sub_resource type="BoxMesh" id="BoxMesh_w8wrh"]
 size = Vector3(0.1, 0.1, 0.1)
 
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_snny6"]
+height = 0.1
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_er05f"]
+height = 0.2
+radius = 1.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_2rowm"]
+radius = 0.1
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4tnkq"]
+size = Vector3(0.5, 2.00293, 0.707889)
+
+[sub_resource type="QuadMesh" id="QuadMesh_4c5t4"]
+size = Vector2(0.5, 0.5)
+
 [node name="enemy" type="CharacterBody3D"]
 script = ExtResource("1_eyg8k")
-neg_pos = -1
-
-[node name="fov_ray" type="RayCast3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.501483, 0)
-target_position = Vector3(0, 0, -10)
-collision_mask = 3
+is_patrolling_guard = true
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_mpxsm")
@@ -53,26 +64,36 @@ transform = Transform3D(0.415, 0, 0, 0, 0.415, 0, 0, 0, 0.415, 0, 0.0129111, -0.
 mesh = SubResource("BoxMesh_h17vd")
 skeleton = NodePath("../..")
 
+[node name="fov_ray" type="RayCast3D" parent="head/MeshInstance3D2"]
+transform = Transform3D(2.40964, 0, 0, 0, 2.40964, 0, 0, 0, 2.40964, 0, -0.00994015, 0.732631)
+target_position = Vector3(0, 0, -10)
+collision_mask = 3
+
 [node name="cam_point" type="Node3D" parent="head/MeshInstance3D2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.266708)
 
 [node name="enemy_FOV" type="Area3D" parent="head"]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.760182, 0)
+transform = Transform3D(-1, 0, -1.50996e-07, 0, 1, 0, 1.50996e-07, 0, -1, 0, 0, 0)
 collision_layer = 2
 collision_mask = 2
 
 [node name="CollisionPolygon3D" type="CollisionPolygon3D" parent="head/enemy_FOV"]
-transform = Transform3D(-4.37114e-08, 1, -4.37114e-08, 0, -4.37114e-08, -1, -1, -4.37114e-08, 1.91069e-15, -0.00851536, 0.0108428, -0.00624657)
+transform = Transform3D(-4.37114e-08, 1, -4.37114e-08, 0, -4.37114e-08, -1, -1, -4.37114e-08, 1.91069e-15, 0, -0.75, 0)
+depth = 2.0
 polygon = PackedVector2Array(-10, 0.528, -10, 3, 0, 0, 0, 0, -10, -3)
 
 [node name="ear" type="Area3D" parent="."]
 collision_mask = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ear"]
+visible = false
 shape = SubResource("SphereShape3D_ufmgs")
 
 [node name="nav_agent" type="NavigationAgent3D" parent="."]
+radius = 1.0
+max_speed = 1.0
 debug_enabled = true
+debug_path_custom_point_size = 10.0
 
 [node name="Timer" type="Timer" parent="."]
 wait_time = 5.0
@@ -91,8 +112,60 @@ mesh = SubResource("BoxMesh_w8wrh")
 [node name="lantern" parent="." instance=ExtResource("2_vn8qu")]
 transform = Transform3D(0.405, 0, 0, 0, 0.405, 0, 0, 0, 0.405, 0.198, 0, -0.842274)
 
+[node name="stepcast3d" type="ShapeCast3D" parent="."]
+shape = SubResource("CylinderShape3D_snny6")
+
+[node name="around_detect" type="ShapeCast3D" parent="."]
+shape = SubResource("CylinderShape3D_er05f")
+target_position = Vector3(0, 0, 0)
+max_results = 1
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Container" type="Control" parent="Control"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="BoxContainer" type="BoxContainer" parent="Control/Container"]
+layout_mode = 0
+offset_left = 540.0
+offset_right = 673.0
+offset_bottom = 187.0
+
+[node name="debug" type="Label" parent="Control/Container/BoxContainer"]
+layout_mode = 2
+
+[node name="target_area3d" type="Area3D" parent="." groups=["backstap_target"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.280353)
+
+[node name="target_collision" type="CollisionShape3D" parent="target_area3d"]
+shape = SubResource("SphereShape3D_2rowm")
+
+[node name="Sprite3D" type="Sprite3D" parent="target_area3d/target_collision"]
+visible = false
+billboard = 1
+texture_filter = 0
+texture = ExtResource("3_yb7b2")
+
+[node name="back_attack_detector" type="Area3D" parent="."]
+collision_mask = 2
+
+[node name="back_area" type="CollisionShape3D" parent="back_attack_detector" groups=["back_area"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00326538, 0.00311762, 0.357417)
+shape = SubResource("BoxShape3D_4tnkq")
+
+[node name="target_area" type="MeshInstance3D" parent="back_attack_detector"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.462881, 0.157489)
+mesh = SubResource("QuadMesh_4c5t4")
+
 [connection signal="body_entered" from="head/enemy_FOV" to="." method="_on_enemy_fov_body_entered"]
 [connection signal="body_exited" from="head/enemy_FOV" to="." method="_on_enemy_fov_body_exited"]
 [connection signal="body_entered" from="ear" to="." method="_on_area_3d_body_entered"]
 [connection signal="target_reached" from="nav_agent" to="." method="_on_nav_agent_target_reached"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[connection signal="body_entered" from="back_attack_detector" to="." method="_on_hit_area_body_entered"]

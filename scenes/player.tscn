@@ -1,25 +1,44 @@
-[gd_scene load_steps=16 format=3 uid="uid://bxe32q67lr32p"]
+[gd_scene load_steps=24 format=4 uid="uid://bxe32q67lr32p"]
 
 [ext_resource type="Script" path="res://scenes/label.gd" id="1_7k2ch"]
+[ext_resource type="Texture2D" uid="uid://dspn3qqf3kmou" path="res://assets/arts/ready_attack.png" id="1_foey5"]
+[ext_resource type="Shader" path="res://assets/shaders/hatch.gdshader" id="1_oid1q"]
+[ext_resource type="Texture2D" uid="uid://r1vaxxncae52" path="res://assets/arts/exarm.png" id="1_wy8ga"]
+[ext_resource type="Texture2D" uid="uid://c1lspfv8x1ww0" path="res://assets/arts/shirt.png" id="2_tsmin"]
+[ext_resource type="Texture2D" uid="uid://dlonms56hknqi" path="res://assets/arts/pant.png" id="3_h4b65"]
+[ext_resource type="Texture2D" uid="uid://busu0hxpvnom0" path="res://assets/arts/foot.png" id="4_y4eyo"]
 
 [sub_resource type="GDScript" id="GDScript_edi2q"]
 script/source = "extends CharacterBody3D
 @onready var collision_shape_3d: CollisionShape3D = $obs_detect/CollisionShape3D
 @onready var obs_detect: Area3D = $obs_detect
-
-@onready var camera_3d: Camera3D = $Camera3D
+@onready var camer_holder: Node3D = $camer_holder
+@onready var camera_3d: Camera3D = $camer_holder/Camera3D
 @onready var min_climb_detector: RayCast3D = $min_climb_detector
-@onready var animation_player: AnimationPlayer = $AnimationPlayer
+#@onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var collision_player: CollisionShape3D = $CollisionShape3D
-@onready var center: Node3D = $Camera3D/center
+@onready var center: Node3D = $camer_holder/Camera3D/center
 @onready var player: CharacterBody3D = $\".\"
 @onready var right: MeshInstance3D = $right
 @onready var left: MeshInstance3D = $left
-@onready var jump_nav: NavigationLink3D = $\"../jumpNav\"
 @onready var camera_3d2: Camera3D = $Control/SubViewportContainer/SubViewport/Camera3D
 @onready var height_detect: RayCast3D = $height_detect
 @onready var floor_detector: Area3D = $floor_detector
 @onready var get_foot_sound: AudioStreamPlayer3D = $player_sound_manager/AudioStreamPlayer3D
+@onready var step_cast_3d: ShapeCast3D = $foot_pointer/StepCast3D
+@onready var subtopview: SubViewport = $center/subtopview
+@onready var subbottom: SubViewport = $center/subbottom
+@onready var camera_3d_top: Camera3D = $center/subtopview/light_detection/Camera3DTop
+@onready var color_rect_top: ColorRect = $CanvasLayer/ColorRectTop
+@onready var weaporn_cam: Camera3D = $camer_holder/Camera3D/SubViewportContainer/SubViewport/weaporn_cam
+
+@onready var label: Label = $Control/Label
+@onready var label_2: Label = $Control/Label2
+@onready var light_detection: Node3D = $center/subtopview/light_detection
+@onready var light_detection2: Node3D = $center/subbottom/light_detection
+@onready var texture_rect_top: TextureRect = $Control/TextureRectTop
+@onready var texture_rect_bottom: TextureRect = $Control/TextureRectBottom
+@onready var sub_viewport_container: SubViewportContainer = $camer_holder/Camera3D/SubViewportContainer
 
 @export var speed_scale = 1.5
 @export var look_sensitivity := 0.1
@@ -31,6 +50,12 @@ script/source = "extends CharacterBody3D
 @export var max_rotation: float = 0.5   # Maximum rotation in radians
 @export var peek_len: float = 0.5
 @export var duration:float = 0.5
+
+@onready var attack_hand: Sprite3D = $body/attack_hand
+@onready var hands: Sprite3D = $body/hands
+var crouch_height = 1
+var normal_height = 1.75
+var grounded = false
 var is_jumping: bool = false  # Track if the player is jumping
 var move_speed = 5
 var is_climbing = false
@@ -43,6 +68,7 @@ var walk_sound_scale = 1
 var yaw := 0.0  # Horizontal rotation
 var pitch := 0.0  # Vertical rotation
 var foot_sound_vol = 1
+var attack_animation = false
 @export var foot_sound_vol_scale = 1
 var mouse_lock = false
 var can_peek = false
@@ -62,7 +88,9 @@ var crouch_flag:bool = false
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	Engine.set_physics_ticks_per_second(DisplayServer.screen_get_refresh_rate())
-
+	subtopview.debug_draw = 2
+	subbottom.debug_draw = 2
+	Global.player_current_pos = global_position
 func _input(event):
 	if mouse_lock:
 		if event is InputEventMouseMotion:
@@ -84,19 +112,28 @@ func _input(event):
 	else:			
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
+func _process(delta: float) -> void:
+	weaporn_cam.global_transform = camera_3d.global_transform
+	weaporn_cam.global_position.y = camer_holder.global_position.y+0.5
+	Global.player_current_pos = global_position
 func _physics_process(delta):
+	label_2.text = \"light_level: \"+ str(Global.player_light_level)
+	Global.player_light_level =light_detected(subtopview,subbottom,texture_rect_top,texture_rect_bottom,color_rect_top)
+	animation()
+	light_detection.global_position = global_position # Make light detection follow the player
+	light_detection2.global_position = global_position
+	#.position = Vector3(0,0.5,-2)+global_position
+	obs_detect.position = Vector3(0,collision_player.shape.height-2,0)
+	right.position = Vector3(1,0,0)
+	left.position = Vector3(-1,0,0)
 	#get_foot_sound.global_position = global_position - Vector3(0,collision_player.shape.height/2,0)
 	if footstep_timer >= 120/walk_sound_scale:
 		#added, checks floor only when we walk
 		sound_num ++1
 		get_walk_sound(sound_num)
 		footstep_timer = 0
+	#camer_holder.position = Vector3(0,collision_player.shape.height*2/7 ,0)
 	
-	camera_3d2.position = Vector3(0,1,-5)+global_position
-	obs_detect.position = Vector3(0,collision_player.shape.height-1,0)
-	right.position = Vector3(1,0,0)
-	left.position = Vector3(-1,0,0)
-	Global.player_current_pos = global_position
 	var direction := Vector3.ZERO
 	match state:
 		WALK:
@@ -116,11 +153,11 @@ func _physics_process(delta):
 			move_speed = 100*speed_scale
 			
 	#print(state)
-	if is_on_floor():  # Ensure the player is on the ground before allowing jumps
+	if is_grounded():  # Ensure the player is on the ground before allowing jumps
 		if Input.is_action_just_pressed(\"jump\") and something_above == false and state != CROUCH:  # Use is_action_just_pressed for one-time input
 			velocity.y = jump_height  # Apply jump velocity
 			is_jumping = true  # Set jumping state to true
-	if not is_on_floor():
+	if not is_grounded():
 		velocity.y += gravity * delta  # Apply gravity when in the air
 	else:
 		is_jumping = false  # Reset jumping state when on the ground
@@ -142,9 +179,9 @@ func _physics_process(delta):
 	elif state != CROUCH: 
 		state = WALK
 	if Input.is_action_just_pressed(\"peek_left\")  and  abs(pitch) < 20 and can_peek:
-		toggle_is_peeking(delta,\"peek_left\")
+		toggle_is_peeking(\"peek_left\")
 	if Input.is_action_just_pressed(\"peek_right\") and  abs(pitch) < 20 and can_peek:
-		toggle_is_peeking(delta,\"peek_right\")
+		toggle_is_peeking(\"peek_right\")
 	# Normalize direction to prevent faster diagonal movement and apply speed
 	if direction != Vector3.ZERO:
 		footstep_timer += 1
@@ -155,16 +192,57 @@ func _physics_process(delta):
 		velocity.x = 0
 		velocity.z = 0
 	# Apply movement
-	if min_climb_detector.collide_with_bodies:
-		height_detect.global_position =  min_climb_detector.get_collision_point()
+	if min_climb_detector.collide_with_bodies && not is_in_group(\"floor\"):
+		height_detect.global_position =  min_climb_detector.get_collision_point()+Vector3(0,0.05,0)
 	if Input.is_action_just_pressed(\"jump\") and Input.is_action_pressed(\"forward\") and not is_climbing and min_climb_detector.get_collider() != null and not something_above:
 		print(\"head_checker\",head_checker())
-		
-		if not head_checker():
+		if not head_checker() and not min_climb_detector.get_collider().is_in_group(\"stair\"):
 			climb_to_box()
+	if (is_peeking == true and can_peek == false):
+		toggle_is_peeking(\"peek_right\")
+	if(Input.is_action_just_pressed(\"sp_attack\")):
+		attack_animation = true
+	if(Input.is_action_just_released(\"sp_attack\")):
+		attack_animation = false
+	if(Input.is_action_pressed(\"attack\") and attack_animation == true):
+		hit_scanner()
+		attack_animation = false
+	move_stair(delta)
 	move_and_slide()
-	
 
+func move_stair(delta):
+	if !is_grounded():
+		step_cast_3d.target_position.y = -0.3
+	else:
+		step_cast_3d.target_position.y = -1
+	step_cast_3d.global_position.x = global_position.x + velocity.x*delta
+	step_cast_3d.global_position.z = global_position.z + velocity.z*delta
+	var quary = PhysicsShapeQueryParameters3D.new()
+	quary.exclude = [self]
+	quary.shape = step_cast_3d.shape
+	quary.transform = step_cast_3d.global_transform
+	var result = get_world_3d().direct_space_state.intersect_shape(quary,1)
+	var cam_pos = camera_3d.global_position
+	var get_collider:Object
+	if !result:
+		step_cast_3d.force_shapecast_update()
+	step_cast_3d.force_shapecast_update()
+	if step_cast_3d.is_colliding():
+		if step_cast_3d.get_collider(0) != null:
+			get_collider =  step_cast_3d.get_collider(0)
+	if step_cast_3d.is_colliding() && velocity.y <= 0.0 && !result && get_collider.is_in_group(\"stair\"):
+		global_position.y = step_cast_3d.get_collision_point(0).y+1
+		camera_3d.global_position.y = lerp(cam_pos.y, camer_holder.global_position.y+0.5, delta/(move_speed/3000))
+		#weaporn_cam.global_position.y = lerp(cam_pos.y, camer_holder.global_position.y+0.5, delta/(move_speed/3000))
+		#camera_3d.global_position.y = lerp(camera_3d.global_position.y, camera_3d.global_position.y+0.2, 0.1)
+		velocity.y = 0
+		grounded = true
+	else:
+		#weaporn_cam.global_position.y = lerp(camera_3d.global_position.y, camer_holder.global_position.y+0.5, 0.1)
+		camera_3d.global_position.y = lerp(camera_3d.global_position.y, camer_holder.global_position.y+0.5, 0.1)
+		grounded = false
+func is_grounded()->bool:
+	return grounded || is_on_floor()
 func _on_obs_detect_body_entered(body: Node3D) -> void:
 	if is_in_group(\"climbable\"):
 		something_above = true
@@ -204,15 +282,13 @@ func climb_to_box():
 	# Player isn't climbing anymore.a
 	is_climbing = false
 
-func toggle_is_peeking(delta,peek):
-	if (peek_state == PEEK_L or peek_state == PEEK_R ):
+func toggle_is_peeking(peek):
+	if (peek_state == PEEK_L or peek_state == PEEK_R or (is_peeking == true and can_peek == false)):
 		is_peeking = false
 		var tween_back = get_tree().create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 		tween_back.set_parallel(true)
 		if peek_state == PEEK_L:
 			var left_direction = -self.transform.basis.x.normalized()
-			#var target = global_transform.origin + Vector3(1, 0, 0)
-			#global_transform.origin = global_transform.origin.move_toward(target, 0.3)
 			var target_pos = -left_direction*peek_len + global_transform.origin
 			var target = global_transform.origin+transform.basis.x.normalized()*Vector3(1,0,1)* peek_len
 			tween_back.tween_property(
@@ -227,8 +303,6 @@ func toggle_is_peeking(delta,peek):
 				)
 			await  tween_back.finished
 		if peek_state == PEEK_R:
-			#var target = global_transform.origin + Vector3(-1, 0, 0)
-			#global_transform.origin = global_transform.origin.move_toward(target, 0.3)
 			var right_direction = self.transform.basis.x.normalized()
 			var target = global_transform.origin-transform.basis.x.normalized()*Vector3(1,0,1)*peek_len
 			tween_back.tween_property(
@@ -250,16 +324,11 @@ func toggle_is_peeking(delta,peek):
 		is_peeking = true
 		match peek:
 			\"peek_left\":
-				# Start the tween animation: rotate to target_rotation_z over 1 second
 				var tween_left = get_tree().create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 				tween_left.set_parallel(true)
 				var target_rotation_z = deg_to_rad(10.0)
 				var target = global_transform.origin-transform.basis.x.normalized()*Vector3(1,0,1)* peek_len
 				peek_state = PEEK_L
-				#self.basis = Basis(Vector3(0, 0, 1), 0.2) * transform.basis
-				##camera_3d.rotate_z(0.4)
-				#camera_3d.rotation.x = 0
-				#camera_3d.rotation.y = 0
 				tween_left.tween_property(
 					player, \"rotation:z\", 
 					target_rotation_z,     # End at the target 
@@ -271,7 +340,6 @@ func toggle_is_peeking(delta,peek):
 					duration
 				)
 				mouse_lock = true
-				#global_transform.origin = left_direction*peek_len + global_transform.origin
 				await  tween_left.finished
 				print(\"peek_left\")
 			\"peek_right\":
@@ -304,10 +372,10 @@ func toggle_crouch():
 	match crouch_flag:
 		true:
 			state = WALK
-			animation_player.play(\"WALK\")
+			#animation_player.play(\"WALK\")
 		false:
 			state = CROUCH
-			animation_player.play(\"CROUCH\")
+			#animation_player.play(\"CROUCH\")
 	crouch_flag = !crouch_flag
 	
 func throw_projectile():
@@ -331,9 +399,11 @@ func head_checker() -> bool:
 	
 func get_walk_sound(current_step):
 	
-	#will only play footstep sound if player is on the ground
-	if is_on_floor():
-		
+	if !is_grounded():
+		step_cast_3d.target_position.y = -0.45
+	else:
+		step_cast_3d.target_position.y = -1
+	
 		# f string that grabs the sound file
 		var sound_path =  \"res://assets/sound/{type}/{num}.wav\"
 		var get_sound = sound_path.format({\"type\": \"stone-steps\",\"num\": current_step})
@@ -344,7 +414,104 @@ func get_walk_sound(current_step):
 		get_foot_sound.play()
 		if current_step == 7:
 			sound_num = 1
+
+func animation():
+	var duration = 0.05
+	var crouch_height = 1
+	var normal_height = 1.75
+	if attack_animation == true:
+		hands.visible = false
+		attack_hand.visible = true
+		var tween_attack_SP = get_tree().create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN).set_parallel(true)
+		tween_attack_SP.tween_property(
+			attack_hand, \"position:y\", 
+			0.5,
+			duration
+		)
+		await  tween_attack_SP.finished
+		tween_attack_SP.kill()
+	else :
+		hands.visible = true
+		attack_hand.visible = false
+		var tween_attack_SP = get_tree().create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN).set_parallel(true)
+		tween_attack_SP.tween_property(
+			attack_hand, \"position:y\", 
+			-0.5,
+			duration
+		)
+		await  tween_attack_SP.finished
+		tween_attack_SP.kill()
 		
+	if state == CROUCH:
+		var tween_crouch = get_tree().create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN).set_parallel(true)
+		tween_crouch.tween_property(
+			collision_player.get_shape(), \"height\", 
+			crouch_height,
+			duration
+		)
+		tween_crouch.tween_property(
+			camer_holder, \"position:y\", 
+			crouch_height/2 ,
+			duration
+		)
+		await  tween_crouch.finished
+	else:
+		var tween_norm = get_tree().create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN).set_parallel(true)
+		tween_norm.tween_property(
+			collision_player.get_shape(), \"height\", 
+			normal_height,
+			duration
+		)
+		tween_norm.tween_property(
+			camer_holder, \"position:y\", 
+			normal_height/2 -0.75,
+			duration
+		)
+		await  tween_norm.finished
+
+func light_detected(subviewtop,subviewbottom,texture_rect_top,texture_rect_bottom,color_rect)->float:
+	var texture1 = subviewtop.get_texture() # Get the ViewportTexture from the SubViewport
+	var texture2 = subviewbottom.get_texture() # Get the ViewportTexture from the SubViewport
+	texture_rect_top.texture = texture1 # Display this texture on the TextureRect
+	texture_rect_bottom.texture = texture2 # Display this texture on the TextureRect
+	var color = get_average_color(texture1,texture2) # Get the average color of the ViewportTexture
+	#color_rect.color = color # Display the average color on the ColorRect
+	return color.get_luminance()
+	#light_level.tint_progress.a = color.get_luminance() # Also tint the progress texture with the above
+
+#func get_average_color(texture: ViewportTexture) -> Color:
+	#var image = texture.get_image() # Get the Image of the input texture
+	#image.resize(1, 1, Image.INTERPOLATE_LANCZOS) # Resize the image to one pixel
+	#return image.get_pixel(0, 0) # Read the color of that pixel
+
+func get_average_color(texture1: ViewportTexture, texture2: ViewportTexture) -> Color:
+	# Get the average color of the first texture
+	var image1 = texture1.get_image()
+	image1.resize(1, 1, Image.INTERPOLATE_LANCZOS)
+	var color1 = image1.get_pixel(0, 0)
+	# Get the average color of the second texture
+	var image2 = texture2.get_image()
+	image2.resize(1, 1, Image.INTERPOLATE_LANCZOS)
+	var color2 = image2.get_pixel(0, 0)
+
+	# Calculate the average color between the two
+	var average_color = Color(
+		(color1.r + color2.r) / 2.0,
+		(color1.g + color2.g) / 2.0,
+		(color1.b + color2.b) / 2.0,
+		(color1.a + color2.a) / 2.0
+	)
+
+	return average_color
+@onready var hitscan: RayCast3D = $camer_holder/Camera3D/hitscan
+func hit_scanner():
+	if hitscan.is_colliding():
+		var obj = hitscan.get_collider()
+		if obj == null:
+			return
+		if obj.is_in_group(\"backstap_target\"):
+			obj.get_parent().queue_free()
+			
 "
 
 [sub_resource type="BoxMesh" id="BoxMesh_anifq"]
@@ -354,250 +521,49 @@ size = Vector3(0.2, 0.2, 0.2)
 radius = 0.3
 height = 1.75
 
-[sub_resource type="BoxMesh" id="BoxMesh_6xk6o"]
-size = Vector3(0.01, 0.01, 0.01)
+[sub_resource type="QuadMesh" id="QuadMesh_0tq62"]
+size = Vector2(1.6, 1)
 
-[sub_resource type="Animation" id="Animation_1asmq"]
-resource_name = "CROUCH"
-length = 0.2
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("CollisionShape3D:shape:height")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [1.75, 1.0]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("CollisionShape3D:position")
-tracks/1/interp = 2
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, 0, 0), Vector3(0, -0.5, 0)]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Camera3D:position")
-tracks/2/interp = 2
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, 0.5, 0), Vector3(0, -0.25, 0)]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("min_climb_detector:target_position")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, -1.75, 0), Vector3(0, -1, 0)]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("min_climb_detector:position")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, 1.00278, -0.703058), Vector3(0, 0.014713, -0.703058)]
-}
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sco8r"]
+shader = ExtResource("1_oid1q")
+shader_parameter/colors = null
+shader_parameter/dither = null
 
-[sub_resource type="Animation" id="Animation_kpwk5"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("CollisionShape3D:shape:height")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [1.75]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("CollisionShape3D:position")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, 0, 0)]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Camera3D:position")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, 0.5, 0)]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath(".:rotation")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, 0, 0)]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("min_climb_detector:target_position")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, -1.75, 0)]
-}
-tracks/5/type = "value"
-tracks/5/imported = false
-tracks/5/enabled = true
-tracks/5/path = NodePath("min_climb_detector:position")
-tracks/5/interp = 1
-tracks/5/loop_wrap = true
-tracks/5/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, 0.875, -0.703)]
-}
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_edfw2"]
+resource_name = "Scene_-_Root"
+cull_mode = 2
+roughness = 0.6
 
-[sub_resource type="Animation" id="Animation_hbxng"]
-resource_name = "WALK"
-length = 0.2
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("CollisionShape3D:shape:height")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [1.0, 1.75]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("CollisionShape3D:position")
-tracks/1/interp = 2
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, -0.5, 0), Vector3(0, 0, 0)]
-}
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Camera3D:position")
-tracks/2/interp = 2
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, -0.25, 0), Vector3(0, 0.5, 0)]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("min_climb_detector:position")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, 0.014713, -0.703058), Vector3(0, 1, -0.703)]
-}
-tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("min_climb_detector:target_position")
-tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, -1, 0), Vector3(0, -1.75, 0)]
-}
+[sub_resource type="ArrayMesh" id="ArrayMesh_yh513"]
+_surfaces = [{
+"aabb": AABB(-2, -2, -2, 4, 4, 4),
+"format": 34896613377,
+"index_count": 24,
+"index_data": PackedByteArray("AAACAAEAAwAAAAEAAgAEAAEABAADAAEAAgAAAAUAAAADAAUABAACAAUAAwAEAAUA"),
+"name": "Scene_-_Root",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 6,
+"vertex_data": PackedByteArray("/3//f///AAD/fwAA/38AAP///3//fwAAAAD/f/9/AAD/f/9/AAAAAP9/////fwAA")
+}]
+blend_shape_mode = 0
 
-[sub_resource type="Animation" id="Animation_4bwaf"]
-resource_name = "left_peek"
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:rotation")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, 0, 0), Vector3(0, 0, 0.202458)]
-}
-
-[sub_resource type="Animation" id="Animation_fe3gp"]
-resource_name = "right_peek"
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:rotation")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(0, 0, 0), Vector3(0, 0, -0.202458)]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_njhe7"]
-_data = {
-"CROUCH": SubResource("Animation_1asmq"),
-"RESET": SubResource("Animation_kpwk5"),
-"WALK": SubResource("Animation_hbxng"),
-"left_peek": SubResource("Animation_4bwaf"),
-"right_peek": SubResource("Animation_fe3gp")
-}
+[sub_resource type="ArrayMesh" id="ArrayMesh_27b3g"]
+resource_name = "Sketchfab_Scene_Object_0"
+_surfaces = [{
+"aabb": AABB(-2, -2, -2, 4, 4, 4),
+"format": 34896613383,
+"index_count": 24,
+"index_data": PackedByteArray("AAACAAEAAwAMABIAFQAEABMADwAJABQAFgANAAUADgAKAAYAEAAXAAcACwARAAgA"),
+"material": SubResource("StandardMaterial3D_edfw2"),
+"name": "Scene_-_Root",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 24,
+"vertex_data": PackedByteArray("/3//f///veP/fwAA/3+94////3//f73jAAD/f/9/rMj/f/9/AAAa+/9/////f4f2/3////9/SsD/f////38E5f9/////f5bxAAD/f/9/k+EAAP9//39KwAAA/3//f5bx/3//f///rMj/f/9///+H9v9//3///0rA/3//fwAAk+H/f/9/AAAE5f9//38AAJbx/38AAP9/rMj/fwAA/38a+/9/AAD/f5Ph////f/9/Gvv///9//3+H9v///3//fwTl14++WdePvlnXj75Z/z//v64o+sqbnnyXRIc4t/+//z+NZEHCTlhe9ESHOLeNZEHC/z//v5uefJdEhzi3Tlhe9P+//z+NZEHC/z//v64o+spOWF70rij6ypuefJf/v/8/")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_yh513")
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_t08rx"]
 height = 0.495025
@@ -611,40 +577,133 @@ size = Vector3(0.298083, 1.14196, 0.759804)
 [sub_resource type="BoxMesh" id="BoxMesh_3f1wh"]
 size = Vector3(0.1, 0.1, 0.1)
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_btpvi"]
+shader = ExtResource("1_oid1q")
+shader_parameter/colors = 1.0
+shader_parameter/dither = null
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_76ijs"]
+height = 0.3
+radius = 0.3
+
+[sub_resource type="BoxMesh" id="BoxMesh_nuo0q"]
+size = Vector3(0.1, 0.1, 0.1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_o1u06"]
+size = Vector3(0.328186, 0.270569, 0.267334)
+
 [node name="player" type="CharacterBody3D" groups=["player"]]
 collision_layer = 2
+floor_snap_length = 0.0
 script = SubResource("GDScript_edi2q")
+speed_scale = 1.0
 
 [node name="height_detect" type="RayCast3D" parent="."]
 target_position = Vector3(0, 1, 0)
+collision_mask = 2
 hit_from_inside = true
 
 [node name="right" type="MeshInstance3D" parent="."]
+visible = false
 mesh = SubResource("BoxMesh_anifq")
 
 [node name="left" type="MeshInstance3D" parent="."]
+visible = false
 mesh = SubResource("BoxMesh_anifq")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_6m5bp")
 
 [node name="min_climb_detector" type="RayCast3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.875, -0.703)
-target_position = Vector3(0, -1.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.00278, -0.703058)
+exclude_parent = false
+hit_from_inside = true
 debug_shape_thickness = 5
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-current = true
-fov = 90.0
+[node name="body" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15)
 
-[node name="center" type="Node3D" parent="Camera3D"]
+[node name="attack_hand" type="Sprite3D" parent="body"]
+transform = Transform3D(0.1, 0, 0, 0, -0.00241182, 0.0999709, 0, -0.0999709, -0.00241182, 0.329684, -0.198978, -0.534495)
+layers = 1024
+billboard = 1
+texture = ExtResource("1_foey5")
+
+[node name="hands" type="Sprite3D" parent="body"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0.515542, -0.145935, 0.105017)
+layers = 1024
+sorting_offset = 1.0
+billboard = 1
+texture = ExtResource("1_wy8ga")
+
+[node name="shirt" type="Sprite3D" parent="body"]
+transform = Transform3D(0.1, 0, 0, 0, -0.1, -1.50996e-08, 0, 1.50996e-08, -0.1, 0, -0.157, 0)
+layers = 1024
+billboard = 1
+texture_filter = 0
+texture = ExtResource("2_tsmin")
+
+[node name="pant" type="Sprite3D" parent="body"]
+transform = Transform3D(0.1, 0, 0, 0, -0.1, -1.50996e-08, 0, 1.50996e-08, -0.1, 0, -0.181, 0)
+layers = 1024
+billboard = 1
+texture_filter = 0
+texture = ExtResource("3_h4b65")
+
+[node name="foot" type="Sprite3D" parent="body"]
+transform = Transform3D(0.1, 0, 0, 0, -0.1, -1.50996e-08, 0, 1.50996e-08, -0.1, 0, -0.361, 0)
+layers = 1024
+billboard = 1
+texture_filter = 0
+texture = ExtResource("4_y4eyo")
+
+[node name="camer_holder" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="camer_holder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.15)
+cull_mask = 523261
+current = true
+
+[node name="hitscan" type="RayCast3D" parent="camer_holder/Camera3D"]
+target_position = Vector3(0, 0, -1)
+collide_with_areas = true
+collide_with_bodies = false
+
+[node name="AudioListener3D" type="AudioListener3D" parent="camer_holder/Camera3D"]
+
+[node name="center" type="Node3D" parent="camer_holder/Camera3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Camera3D/center"]
-mesh = SubResource("BoxMesh_6xk6o")
+[node name="camera_shader" type="MeshInstance3D" parent="camer_holder/Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.545088)
+visible = false
+mesh = SubResource("QuadMesh_0tq62")
+surface_material_override/0 = SubResource("ShaderMaterial_sco8r")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="camer_holder/Camera3D"]
+clip_contents = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+metadata/_edit_use_anchors_ = true
+
+[node name="SubViewport" type="SubViewport" parent="camer_holder/Camera3D/SubViewportContainer"]
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(1152, 648)
+render_target_update_mode = 4
+
+[node name="weaporn_cam" type="Camera3D" parent="camer_holder/Camera3D/SubViewportContainer/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.15)
+cull_mask = 1024
 
 [node name="Control" type="Control" parent="."]
+visibility_layer = 2
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
@@ -656,27 +715,74 @@ offset_right = 40.0
 offset_bottom = 23.0
 script = ExtResource("1_7k2ch")
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="Control"]
+[node name="Label2" type="Label" parent="Control"]
 layout_mode = 0
-offset_left = 638.0
-offset_top = 3.0
-offset_right = 1150.0
-offset_bottom = 259.0
+offset_top = 111.0
+offset_right = 40.0
+offset_bottom = 134.0
+
+[node name="TextureRectTop" type="TextureRect" parent="Control"]
+layout_mode = 0
+offset_left = 104.0
+offset_right = 112.0
+offset_bottom = 8.0
+expand_mode = 1
+stretch_mode = 4
+
+[node name="TextureRectBottom" type="TextureRect" parent="Control"]
+layout_mode = 0
+offset_left = 112.0
+offset_right = 120.0
+offset_bottom = 8.0
+expand_mode = 1
+stretch_mode = 4
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="Control"]
+visible = false
+layout_mode = 1
+offset_right = 1152.0
+offset_bottom = 650.0
 
 [node name="SubViewport" type="SubViewport" parent="Control/SubViewportContainer"]
 handle_input_locally = false
-size = Vector2i(512, 256)
-render_target_update_mode = 4
+render_target_update_mode = 0
 
 [node name="Camera3D" type="Camera3D" parent="Control/SubViewportContainer/SubViewport"]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0.253758, 2.31785)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.305)
+cull_mask = 1047551
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_njhe7")
-}
+[node name="center" type="Node3D" parent="."]
+transform = Transform3D(0.21, 0, 0, 0, 0.21, 0, 0, 0, 0.21, 0, 0, 0)
 
-[node name="Node3D" type="Node3D" parent="."]
+[node name="subtopview" type="SubViewport" parent="center"]
+canvas_item_default_texture_filter = 0
+size = Vector2i(32, 32)
+
+[node name="light_detection" type="Node3D" parent="center/subtopview"]
+
+[node name="Object_2" type="MeshInstance3D" parent="center/subtopview/light_detection"]
+transform = Transform3D(0.21, 0, 0, 0, 0.21, 0, 0, 0, 0.21, 0, 0, 0)
+layers = 524288
+mesh = SubResource("ArrayMesh_27b3g")
+skeleton = NodePath("")
+
+[node name="Camera3DTop" type="Camera3D" parent="center/subtopview/light_detection"]
+transform = Transform3D(0.707107, -0.707107, -3.09086e-08, 0, -4.37114e-08, 1, -0.707107, -0.707107, -3.09086e-08, 0, 0.5, 0)
+cull_mask = 524289
+fov = 60.0
+far = 14.05
+
+[node name="subbottom" type="SubViewport" parent="center"]
+canvas_item_default_texture_filter = 0
+size = Vector2i(32, 32)
+
+[node name="light_detection" type="Node3D" parent="center/subbottom"]
+
+[node name="Camera3DBottom" type="Camera3D" parent="center/subbottom/light_detection"]
+transform = Transform3D(0.707107, 0.707107, -3.09086e-08, 0, -4.37114e-08, -1, -0.707107, 0.707107, -3.09086e-08, 0, -0.5, 0)
+cull_mask = 524289
+fov = 60.0
+far = 14.05
 
 [node name="obs_detect" type="Area3D" parent="."]
 collision_layer = 2
@@ -687,12 +793,14 @@ shape = SubResource("CylinderShape3D_t08rx")
 
 [node name="peekDetector" type="Area3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.00395054)
+visible = false
 
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="peekDetector"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.012, -0.498192, -0.326)
 shape = SubResource("BoxShape3D_hgqmd")
 
 [node name="floor_detector" type="Area3D" parent="."]
+visible = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="floor_detector"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.830745, 0)
@@ -701,7 +809,7 @@ shape = SubResource("BoxShape3D_vum5q")
 [node name="player_sound_manager" type="Node3D" parent="."]
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="player_sound_manager"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.28075, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.851949, 0)
 attenuation_model = 1
 unit_size = 0.8
 
@@ -709,7 +817,66 @@ unit_size = 0.8
 visible = false
 mesh = SubResource("BoxMesh_3f1wh")
 
-[node name="AudioListener3D" type="AudioListener3D" parent="player_sound_manager"]
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+follow_viewport_enabled = true
+
+[node name="ColorRectTop" type="ColorRect" parent="CanvasLayer"]
+visible = false
+offset_left = 2.0
+offset_top = 512.0
+offset_right = 130.0
+offset_bottom = 646.0
+
+[node name="ColorRectBottom" type="ColorRect" parent="CanvasLayer"]
+visible = false
+offset_left = 1026.0
+offset_top = 512.0
+offset_right = 1152.0
+offset_bottom = 646.0
+
+[node name="Control" type="Control" parent="CanvasLayer"]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+visible = false
+offset_left = 186.0
+offset_top = 520.0
+offset_right = 226.0
+offset_bottom = 560.0
+
+[node name="ColorRect2" type="ColorRect" parent="CanvasLayer"]
+visible = false
+material = SubResource("ShaderMaterial_btpvi")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+
+[node name="foot_pointer" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.875, 0)
+
+[node name="StepCast3D" type="ShapeCast3D" parent="foot_pointer"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.716013, 0)
+shape = SubResource("CylinderShape3D_76ijs")
+max_results = 5
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="foot_pointer/StepCast3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.990102, 0)
+visible = false
+mesh = SubResource("BoxMesh_nuo0q")
+
+[node name="attack_area" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="attack_area"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.309)
+shape = SubResource("BoxShape3D_o1u06")
 
 [connection signal="body_entered" from="obs_detect" to="." method="_on_obs_detect_body_entered"]
 [connection signal="body_exited" from="obs_detect" to="." method="_on_obs_detect_body_exited"]

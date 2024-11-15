@@ -3,12 +3,12 @@
 importer="mp3"
 type="AudioStreamMP3"
 uid="uid://dx1b0fih8mu7c"
-path="res://.godot/imported/6.mp3-fa5c7c0952155dec8698997694a6b525.mp3str"
+path="res://.godot/imported/5.mp3-544d1641d3d0e26eebde3f33cb25c747.mp3str"
 
 [deps]
 
-source_file="res://assets/sound/walk_stone/6.mp3"
-dest_files=["res://.godot/imported/6.mp3-fa5c7c0952155dec8698997694a6b525.mp3str"]
+source_file="res://assets/sound/walk_stone/5.mp3"
+dest_files=["res://.godot/imported/5.mp3-544d1641d3d0e26eebde3f33cb25c747.mp3str"]
 
 [params]
 
