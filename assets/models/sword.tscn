@@ -1,0 +1,33 @@
+[gd_scene load_steps=6 format=3 uid="uid://c0578h4cmf71k"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_v01tj"]
+size = Vector3(0.1, 0.5, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y7tx2"]
+albedo_color = Color(0.266575, 0.266575, 0.266575, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_2ai3h"]
+size = Vector3(0.38, 0.1, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ve0lt"]
+metallic = 1.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_605ta"]
+metallic = 1.0
+
+[node name="sword" type="Node3D"]
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="."]
+mesh = SubResource("BoxMesh_v01tj")
+material = SubResource("StandardMaterial3D_y7tx2")
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="CSGMesh3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.140098, 0)
+mesh = SubResource("BoxMesh_2ai3h")
+material = SubResource("StandardMaterial3D_ve0lt")
+
+[node name="CSGPolygon3D" type="CSGPolygon3D" parent="CSGMesh3D/CSGMesh3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0196104, 0.017658)
+material_override = SubResource("StandardMaterial3D_605ta")
+polygon = PackedVector2Array(-0.1, 1.648, -0.100267, 0.0601287, 0.101035, 0.0460022, 0.0970432, 1.64298, 0, 1.833)
+depth = 0.03

@@ -1,24 +1,46 @@
 [gd_scene format=3 uid="uid://bqtxqrua1aq1k"]
 
-[node name="lantern" type="CSGCylinder3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.182617, 0)
-radius = 0.227
-height = 0.851859
+[node name="lantern" type="Node3D"]
 
-[node name="CSGBox3D" type="CSGBox3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.192017, 0.0115818, 0.00381482)
+[node name="CSGCylinder3D2" type="CSGCylinder3D" parent="."]
+radius = 0.175
+height = 1.55589
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+height = 0.553189
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="CSGCylinder3D"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0.267747, 0)
 operation = 2
-size = Vector3(1.73657, 0.246582, 1.45862)
+size = Vector3(1, 0.539185, 0.1)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-visible = false
-skeleton = NodePath("../OmniLight3D/SpotLight3D")
+[node name="CSGBox3D4" type="CSGBox3D" parent="CSGCylinder3D"]
+transform = Transform3D(-0.707105, 0, -0.707105, 0, 1, 0, 0.707105, 0, -0.707105, 0, 0.267747, 0)
+operation = 2
+size = Vector3(1.08301, 0.539185, 0.1)
 
-[node name="CSGBox3D" type="CSGBox3D" parent="MeshInstance3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.02691, -9.69336)
-size = Vector3(1, 1, 20.3867)
+[node name="CSGBox3D" type="CSGBox3D" parent="CSGCylinder3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.267747, 0)
+operation = 2
+size = Vector3(1, 0.539185, 0.1)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="CSGCylinder3D"]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 0, 0.267747, 0)
+operation = 2
+size = Vector3(1, 0.539185, 0.1)
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="CSGCylinder3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00192499, 0.0877038, 0.00162888)
+operation = 2
+radius = 0.295
+height = 0.38992
+
+[node name="Node3D" type="Node3D" parent="CSGCylinder3D"]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 0, 0.813503, 0)
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.60669, 0)
 light_color = Color(1, 0.721569, 0.415686, 1)
 light_energy = 9.0
 shadow_enabled = true
@@ -28,7 +50,6 @@ omni_range = 10.0
 omni_attenuation = 2.0
 
 [node name="SpotLight3D" type="SpotLight3D" parent="OmniLight3D"]
-visible = false
 light_color = Color(1, 0.721569, 0.415686, 1)
 light_energy = 16.0
 light_indirect_energy = 16.0

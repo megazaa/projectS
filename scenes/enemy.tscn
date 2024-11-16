@@ -110,7 +110,7 @@ visible = false
 mesh = SubResource("BoxMesh_w8wrh")
 
 [node name="lantern" parent="." instance=ExtResource("2_vn8qu")]
-transform = Transform3D(0.405, 0, 0, 0, 0.405, 0, 0, 0, 0.405, 0.198, 0, -0.842274)
+transform = Transform3D(0.275, 0, 0, 0, 0.275, 0, 0, 0, 0.275, -0.387693, 0.371055, -0.57429)
 
 [node name="stepcast3d" type="ShapeCast3D" parent="."]
 shape = SubResource("CylinderShape3D_snny6")
@@ -151,6 +151,9 @@ visible = false
 billboard = 1
 texture_filter = 0
 texture = ExtResource("3_yb7b2")
+
+[node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D(0.415, 0, 0, 0, 0.415, 0, 0, 0, 0.415, 0, 0, 0)
 
 [node name="back_attack_detector" type="Area3D" parent="."]
 collision_mask = 2
