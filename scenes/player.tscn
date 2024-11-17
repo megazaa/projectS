@@ -115,6 +115,7 @@ func _input(event):
 func _process(delta: float) -> void:
 	weaporn_cam.global_transform = camera_3d.global_transform
 	weaporn_cam.global_position.y = camer_holder.global_position.y+0.5
+	Global.sp_attack = attack_animation
 	Global.player_current_pos = global_position
 func _physics_process(delta):
 	label_2.text = \"light_level: \"+ str(Global.player_light_level)
@@ -666,6 +667,7 @@ current = true
 
 [node name="hitscan" type="RayCast3D" parent="camer_holder/Camera3D"]
 target_position = Vector3(0, 0, -1)
+collision_mask = 1048576
 collide_with_areas = true
 collide_with_bodies = false
 

@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://bxe32q67lr32p" path="res://scenes/player.tscn" id="1_5g10o"]
 [ext_resource type="PackedScene" uid="uid://df4k86d23dcsc" path="res://scenes/enemy.tscn" id="2_37erq"]
 [ext_resource type="PackedScene" uid="uid://csnv44tpml20o" path="res://scenes/climbbox.tscn" id="2_pko6u"]
-[ext_resource type="PackedScene" path="res://scenes/floor.tscn" id="4_ika67"]
+[ext_resource type="PackedScene" uid="uid://cpanaqw2col2k" path="res://scenes/floor.tscn" id="4_ika67"]
 [ext_resource type="PackedScene" path="res://scenes/CSGStairMaker3D.tscn" id="4_l52ws"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_nx3gh"]

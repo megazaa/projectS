@@ -142,6 +142,8 @@ layout_mode = 2
 
 [node name="target_area3d" type="Area3D" parent="." groups=["backstap_target"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.280353)
+collision_layer = 1048576
+collision_mask = 1048576
 
 [node name="target_collision" type="CollisionShape3D" parent="target_area3d"]
 shape = SubResource("SphereShape3D_2rowm")
@@ -156,6 +158,7 @@ texture = ExtResource("3_yb7b2")
 transform = Transform3D(0.415, 0, 0, 0, 0.415, 0, 0, 0, 0.415, 0, 0, 0)
 
 [node name="back_attack_detector" type="Area3D" parent="."]
+collision_layer = 1048577
 collision_mask = 2
 
 [node name="back_area" type="CollisionShape3D" parent="back_attack_detector" groups=["back_area"]]
@@ -172,3 +175,4 @@ mesh = SubResource("QuadMesh_4c5t4")
 [connection signal="target_reached" from="nav_agent" to="." method="_on_nav_agent_target_reached"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
 [connection signal="body_entered" from="back_attack_detector" to="." method="_on_hit_area_body_entered"]
+[connection signal="body_exited" from="back_attack_detector" to="." method="_on_back_attack_detector_body_exited"]

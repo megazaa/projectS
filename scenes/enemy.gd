@@ -17,8 +17,7 @@ var next_point =1
 @export var SPEED = 100
 @export var neg_pos = 1
 var hp = 10
-
-
+var can_back_stab = false
 var sound_num = 1
 var foot_sound_vol = 1
 var walk_sound_scale = 1
@@ -111,6 +110,11 @@ func _physics_process(delta: float) -> void:
 		in_pursuit = false
 		print("idle")
 	last_position = global_position
+	if (can_back_stab == true):
+		if Global.sp_attack == true:
+			target_sprite_3d.visible = true
+		else:
+			target_sprite_3d.visible = false
 	sight_check()
 	move_and_slide()
 	
@@ -419,18 +423,15 @@ func struck_agent():
 
 func _on_hit_area_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player"):
-		print("hi")
-		
-		print("target_area",target_area.get_aabb().size)
-		print("target_area",target_area.get_aabb().position)
-		print("target_area",target_area.get_aabb().position)
-		if body.attack_animation == true:
-			var size = target_area.get_aabb().size
-			var randomvector2d = _random_target_vector2D(Vector2(size.x,size.y))
-			target_sprite_3d.visible = true
-			target_area_3d.position = target_area.position+Vector3(randomvector2d.x,randomvector2d.y,0.1)
-		else:
-			target_sprite_3d.visible = false
+		can_back_stab = true
+		var size = target_area.get_aabb().size
+		var randomvector2d = _random_target_vector2D(Vector2(size.x,size.y))
+		target_area_3d.position = target_area.position+Vector3(randomvector2d.x,randomvector2d.y,0.1)
+func _on_back_attack_detector_body_exited(body: Node3D) -> void:
+	if body.is_in_group("player"):
+		can_back_stab = false
+		target_sprite_3d.visible = false
+	
 func _random_target_vector2D(size:Vector2)->Vector2:
 	var target_x = randf_range(-size.x/2,size.x/2)
 	var target_y = randf_range(-size.y/2,size.y/2)

@@ -10,7 +10,11 @@ extends Node3D
 @export var maxRecursion :int = 15
 @export_range(0,1) var survival_chance:float = 0.25
 @export_multiline var custom_seed : String = "" : set = set_seed
-
+var must_have = {
+	"tree": {"id": 4, "width": 2, "height": 2},
+	"house": {"id": 5, "width": 20, "height": 10},
+	"castle": {"id": 6, "width": 10, "height": 10}
+	}
 var room_tiles: Array[PackedVector3Array] = []
 var room_positions : PackedVector3Array = []
 func set_seed(val:String)->void:
@@ -18,19 +22,21 @@ func set_seed(val:String)->void:
 	seed(val.hash())
 func set_start(val:bool) ->void:
 	if Engine.is_editor_hint():
+		#room_tiles.clear()
+		#room_positions.clear()
+		#visualizeBorder()
+		#make_room_new(must_have.size())
 		generate()
-	
-func _ready() -> void:
-	generate()
-	
 func generate():
 	print("generating...")
 	room_tiles.clear()
 	room_positions.clear()
 	if custom_seed :set_seed(custom_seed)
 	visualizeBorder()
+	make_room_new(must_have.size())
 	for i in roomNumber:
-		make_room(maxRecursion)
+		make_room(maxRecursion-3)
+	
 	print("room_positions",room_positions)
 	var v3tov2 : PackedVector2Array = []
 	var del_graph : AStar2D =  AStar2D.new()
@@ -79,6 +85,7 @@ func generate():
 				if survival_chance> kill:
 					hallway_graph.connect_points(p,c)
 	create_hallway(hallway_graph);
+	make_floor()
 
 func create_hallway(hallway_graph:AStar2D):
 	var hallways : Array[PackedVector3Array] = []
@@ -99,8 +106,8 @@ func create_hallway(hallway_graph:AStar2D):
 						tile_to = t
 				var hallway : PackedVector3Array = [tile_from,tile_to]
 				hallways.append(hallway)
-				grid_map.set_cell_item(tile_from,3)
-				grid_map.set_cell_item(tile_to,3)
+				#grid_map.set_cell_item(tile_from,3)
+				#grid_map.set_cell_item(tile_to,3)
 	
 	var astar : AStarGrid2D = AStarGrid2D.new()
 	astar.size = Vector2i.ONE * border_Size
@@ -108,7 +115,7 @@ func create_hallway(hallway_graph:AStar2D):
 	astar.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_NEVER
 	astar.default_estimate_heuristic = AStarGrid2D.HEURISTIC_MANHATTAN
 	
-	for t in grid_map.get_used_cells_by_item(1):
+	for t in grid_map.get_used_cells_by_item(4):
 		astar.set_point_solid(Vector2i(t.x,t.z))
 	var _t : int = 0
 	for h in hallways:
@@ -171,3 +178,41 @@ func make_room(rec:int):
 	var avg_z :float = start_pos.z + float(height)/2
 	var pos : Vector3 = Vector3(avg_x,0,avg_z)
 	room_positions.append(pos)
+	
+func make_room_new(size:int):
+	if size < 1:
+		print("size <1")
+		return
+	for i in must_have:
+		var wideth : int = must_have[i]["width"]
+		var height : int = must_have[i]["height"]
+		var start_pos : Vector3i
+		start_pos.x = randi() % (border_Size - wideth +1)
+		start_pos.z = randi() % (border_Size - height +1)
+		var room : PackedVector3Array = []
+		for r in range(-roomMargin,height+roomMargin):
+			for c in range(-roomMargin,wideth+roomMargin):
+				var pos : Vector3i = start_pos + Vector3i(c,0,r)
+				if grid_map.get_cell_item(pos) >= 2:
+					return
+		for r in height:
+			for c in wideth:
+				var pos : Vector3i = start_pos + Vector3i(c,0,r)
+				grid_map.set_cell_item(pos,1)
+		var pos_must : Vector3i = start_pos
+		grid_map.set_cell_item(pos_must,must_have[i]["id"])
+		print(pos_must)
+		#print(pos_must,must_have[i]["id"])
+		room.append(pos_must)
+		room_tiles.append(room)
+		var avg_x :float = start_pos.x + float(wideth)/2
+		var avg_z :float = start_pos.z + float(height)/2
+		var pos : Vector3 = Vector3(avg_x,0,avg_z)
+		room_positions.append(pos_must)
+
+func make_floor():
+	for r in range(0,border_Size-1):
+		for c in range(0,border_Size-1):
+			var pos : Vector3i = Vector3i(c,0,r)
+			if grid_map.get_cell_item(pos) == -1:
+				grid_map.set_cell_item(pos,3)
