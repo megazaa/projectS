@@ -1,4 +1,4 @@
-[gd_scene load_steps=61 format=4 uid="uid://da5m1v28o4quq"]
+[gd_scene load_steps=62 format=4 uid="uid://da5m1v28o4quq"]
 
 [ext_resource type="PackedScene" uid="uid://bxe32q67lr32p" path="res://scenes/player.tscn" id="1_ly3v4"]
 [ext_resource type="PackedScene" uid="uid://db3g4v40ka6ba" path="res://scenes/interact_door.tscn" id="2_acn6o"]
@@ -16,7 +16,6 @@
 [ext_resource type="Script" path="res://scenes/interact_area_demo.gd" id="10_w4yhn"]
 [ext_resource type="Texture2D" uid="uid://tfhrbstpq54l" path="res://assets/models/trees/Normal Trees_2.png" id="11_3pa4r"]
 [ext_resource type="Theme" uid="uid://cy2av2haqga2r" path="res://theme/new_theme.tres" id="11_ve2lr"]
-[ext_resource type="PackedScene" uid="uid://bffj2tqvlra2h" path="res://scenes/drops/evidence_1.tscn" id="14_mboe7"]
 [ext_resource type="PackedScene" uid="uid://hkpca41kecxr" path="res://scenes/drops/evidence_2.tscn" id="15_6j50q"]
 [ext_resource type="PackedScene" uid="uid://c48vnmrs6yaw" path="res://scenes/drops/evidence_3.tscn" id="16_mhqou"]
 
@@ -173,7 +172,15 @@ key_for = "bedroom key"
 
 [sub_resource type="Resource" id="Resource_lityp"]
 script = ExtResource("8_sfv7o")
-node_name = "guard_position_points"
+node_name = "guard_position_points7"
+
+[sub_resource type="Resource" id="Resource_l205e"]
+script = ExtResource("8_sfv7o")
+node_name = "guard_position_points2"
+
+[sub_resource type="Resource" id="Resource_ygm1e"]
+script = ExtResource("8_sfv7o")
+node_name = "guard_position_points4"
 
 [sub_resource type="Resource" id="Resource_qpsgn"]
 script = ExtResource("8_sfv7o")
@@ -549,7 +556,7 @@ skeleton = NodePath("")
 shape = SubResource("ConcavePolygonShape3D_qjvg2")
 
 [node name="door3" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.15763, 40.9773, 67.7645)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.92407, 40.9773, 67.7643)
 script = ExtResource("2_riax7")
 item = SubResource("Resource_2o8ay")
 
@@ -559,20 +566,49 @@ libraries = {
 }
 
 [node name="Area3D" type="Area3D" parent="door3" groups=["interactable"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.508713)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.437726, 0, 0.508713)
 collision_layer = 1048577
 
 [node name="CollisionShape3D2" type="CollisionShape3D" parent="door3/Area3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.394687, 0, 0)
 shape = SubResource("ConcavePolygonShape3D_qjvg2")
 
 [node name="Cube_136" type="MeshInstance3D" parent="door3"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.407924, 0, 0.529686)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0298033, 0, 0.529686)
 mesh = SubResource("BoxMesh_xjkbs")
 skeleton = NodePath("")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="door3/Cube_136"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="door3/Cube_136/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_qjvg2")
+
+[node name="door4" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.48783, 40.9773, 70.6174)
+script = ExtResource("2_riax7")
+item = SubResource("Resource_2o8ay")
+
+[node name="door_ani" type="AnimationPlayer" parent="door4"]
+libraries = {
+"": SubResource("AnimationLibrary_snl8t")
+}
+
+[node name="Area3D" type="Area3D" parent="door4" groups=["interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.437726, 0, 0.508713)
+collision_layer = 1048577
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="door4/Area3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.394687, 0, 0)
+shape = SubResource("ConcavePolygonShape3D_qjvg2")
+
+[node name="Cube_136" type="MeshInstance3D" parent="door4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0298033, 0, 0.529686)
+mesh = SubResource("BoxMesh_xjkbs")
+skeleton = NodePath("")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="door4/Cube_136"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="door4/Cube_136/StaticBody3D"]
 shape = SubResource("ConcavePolygonShape3D_qjvg2")
 
 [node name="door2" type="Node3D" parent="."]
@@ -671,11 +707,23 @@ item = SubResource("Resource_saspl")
 lock = true
 
 [node name="player" parent="." instance=ExtResource("1_ly3v4")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.2221, 46.8842, 81.8092)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.3294, 1.81395, 119.881)
 
 [node name="enemy" parent="." instance=ExtResource("2_rm6b4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.16542, 31.3129, 68.8975)
 path = SubResource("Resource_lityp")
+
+[node name="enemy3" parent="." instance=ExtResource("2_rm6b4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.16542, 22.1962, 68.8975)
+path = SubResource("Resource_l205e")
+
+[node name="enemy7" parent="." instance=ExtResource("2_rm6b4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.927938, -7.66723, 76.7886)
+path = SubResource("Resource_lityp")
+
+[node name="enemy4" parent="." instance=ExtResource("2_rm6b4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.2833, 22.1962, 68.8975)
+path = SubResource("Resource_ygm1e")
 
 [node name="enemy2" parent="." instance=ExtResource("2_rm6b4")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.16542, 41.2387, 68.8975)
@@ -722,6 +770,120 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7.71297)
 
 [node name="point_6" type="Marker3D" parent="guard_position_points"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.58783, 0, 0)
+
+[node name="guard_position_points2" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20.0927, 74.9702)
+
+[node name="point_1" type="Marker3D" parent="guard_position_points2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.21344, 0, -6.74929)
+
+[node name="point_2" type="Marker3D" parent="guard_position_points2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.87967, 0, -6.63142)
+
+[node name="point_3" type="Marker3D" parent="guard_position_points2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.78819, 0, 0)
+
+[node name="point_4" type="Marker3D" parent="guard_position_points2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.71905, 0, 5.2421)
+
+[node name="point_5" type="Marker3D" parent="guard_position_points2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.961364, 0, 4.13535)
+
+[node name="point_6" type="Marker3D" parent="guard_position_points2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0363631, 0, 0)
+
+[node name="guard_position_points4" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20.0927, 74.9702)
+
+[node name="point_1" type="Marker3D" parent="guard_position_points4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.30109, 0, -6.74929)
+
+[node name="point_2" type="Marker3D" parent="guard_position_points4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.5598, 0, -6.63142)
+
+[node name="point_3" type="Marker3D" parent="guard_position_points4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.457, 0, 0)
+
+[node name="point_4" type="Marker3D" parent="guard_position_points4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.4744, 0, 5.2421)
+
+[node name="point_5" type="Marker3D" parent="guard_position_points4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.46027, 0, 7.1593)
+
+[node name="point_6" type="Marker3D" parent="guard_position_points4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.41352, 0, 0)
+
+[node name="guard_position_points5" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9.2487, 74.9702)
+
+[node name="point_1" type="Marker3D" parent="guard_position_points5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.30109, 0, -6.74929)
+
+[node name="point_2" type="Marker3D" parent="guard_position_points5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.0559, 0, -6.63142)
+
+[node name="point_3" type="Marker3D" parent="guard_position_points5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.4815, 0.707726, 1.2388)
+
+[node name="point_4" type="Marker3D" parent="guard_position_points5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.70989, 0.694963, 3.07155)
+
+[node name="point_5" type="Marker3D" parent="guard_position_points5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.99648, 0.676552, 7.1593)
+
+[node name="point_6" type="Marker3D" parent="guard_position_points5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.10373, 0.908942, 0)
+
+[node name="evidence2" parent="guard_position_points5" instance=ExtResource("15_6j50q")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -1.29781, -7.3526, 5.35559)
+
+[node name="guard_position_points6" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0158517, 74.9702)
+
+[node name="point_1" type="Marker3D" parent="guard_position_points6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.30109, 0, -6.74929)
+
+[node name="point_2" type="Marker3D" parent="guard_position_points6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.0559, 0, -6.63142)
+
+[node name="point_3" type="Marker3D" parent="guard_position_points6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.246, 0, 7.1671)
+
+[node name="point_4" type="Marker3D" parent="guard_position_points6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.70989, 0, 7.4258)
+
+[node name="point_5" type="Marker3D" parent="guard_position_points6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.153, 0, 0.790611)
+
+[node name="point_6" type="Marker3D" parent="guard_position_points6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.92002, 0, 0)
+
+[node name="evidence2" parent="guard_position_points6" instance=ExtResource("15_6j50q")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -1.29781, -7.3526, 5.35559)
+
+[node name="guard_position_points7" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -8.93001, 74.9702)
+
+[node name="point_1" type="Marker3D" parent="guard_position_points7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.4805, 0, 3.40748)
+
+[node name="point_2" type="Marker3D" parent="guard_position_points7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.59645, 0, 2.88945)
+
+[node name="point_3" type="Marker3D" parent="guard_position_points7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.0646, -0.936036, 7.1671)
+
+[node name="point_4" type="Marker3D" parent="guard_position_points7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.1192, 0, -8.36282)
+
+[node name="point_5" type="Marker3D" parent="guard_position_points7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5003, 0, -7.11684)
+
+[node name="point_6" type="Marker3D" parent="guard_position_points7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.92002, 0, 0)
+
+[node name="evidence2" parent="guard_position_points7" instance=ExtResource("15_6j50q")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -1.29781, -7.3526, 5.35559)
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_xmril")
@@ -819,15 +981,6 @@ size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 36
 text = "no"
 icon_alignment = 1
-
-[node name="evidence1" parent="bed/Control" instance=ExtResource("14_mboe7")]
-transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 13.6712, 1, 118.507)
-
-[node name="evidence2" parent="bed/Control" instance=ExtResource("15_6j50q")]
-transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 13.2094, 1, 117.365)
-
-[node name="evidence3" parent="bed/Control" instance=ExtResource("16_mhqou")]
-transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 12.5179, 1, 118.668)
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.131, 0, 123.1)
@@ -1890,6 +2043,15 @@ skeleton = NodePath("")
 transform = Transform3D(100, 0, 0, 0, -1.19209e-05, 100, 0, -100, -1.19209e-05, -11.9348, 0, 5.67631)
 mesh = SubResource("ArrayMesh_6n7ax")
 skeleton = NodePath("")
+
+[node name="evidence2" parent="." instance=ExtResource("15_6j50q")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 6.72376, 30.3173, 82.3868)
+
+[node name="evidence3" parent="." instance=ExtResource("16_mhqou")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -0.716016, 50, 72.4528)
+
+[node name="evidence4" parent="." instance=ExtResource("16_mhqou")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, -3.66368, 20.5475, 74.8063)
 
 [connection signal="body_entered" from="bed/interact_area" to="bed/interact_area" method="_on_body_entered"]
 [connection signal="body_exited" from="bed/interact_area" to="bed/interact_area" method="_on_body_exited"]

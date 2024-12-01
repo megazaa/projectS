@@ -32,7 +32,7 @@ func _on_body_exited(body: Node3D) -> void:
 
 
 func _on_yes_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/demo.tscn")
+	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 
 func _on_no_pressed() -> void:

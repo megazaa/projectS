@@ -59,9 +59,9 @@ func _ready() -> void:
 @onready var label_3d: Label3D = $Label3D
 
 @onready var debug: Label = $Control/Container/BoxContainer/debug
-func _process(delta: float) -> void:
-	debug.text = "seen_player:" + str(seen_player)+"\nin_pursuit"+ str(in_pursuit)+ "\nis_at_point"+str(is_at_point)+"\nin_roaming" \
-	+str(in_roaming)+"\nin_finding"+str(in_finding) + "\ntimelef "+str(action_timer.time_left) +"\nallpoint" +str(all_point) +"\nnext point" +str(all_point[next_point])
+#func _process(delta: float) -> void:
+	#debug.text = "seen_player:" + str(seen_player)+"\nin_pursuit"+ str(in_pursuit)+ "\nis_at_point"+str(is_at_point)+"\nin_roaming" \
+	#+str(in_roaming)+"\nin_finding"+str(in_finding) + "\ntimelef "+str(action_timer.time_left) +"\nallpoint" +str(all_point) +"\nnext point" +str(all_point[next_point])
 func _physics_process(delta: float) -> void:
 	door_check()
 	check_rang_ack()

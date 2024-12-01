@@ -4,6 +4,9 @@ const DIST = 1000 #Ray Max distance
 @onready var quests_room: Node3D = $"."
 @onready var camera_3d: Camera3D = $Camera3D
 @onready var canvas_layer: CanvasLayer = $CanvasLayer
+func _ready() -> void:
+	Global.inventory.clear()
+	Global.objectiveList.clear()
 func _process(delta: float) -> void:
 	if Global.mail_menu == false:
 		canvas_layer.visible = false
@@ -47,3 +50,16 @@ func _on_cancel_pressed() -> void:
 
 func _on_accept_pressed() -> void:
 	Global.objectiveList = current_obj
+	print("off")
+	canvas_layer.visible = false
+@onready var h_box_container_2: HBoxContainer = $bed/Control/HBoxContainer2
+
+@onready var label: Label = $bed/Control/Label
+
+func _on_yes_e_pressed() -> void:
+	get_tree().quit()
+
+
+func _on_no_e_pressed() -> void:
+	h_box_container_2.visible = false
+	label.visible = false
