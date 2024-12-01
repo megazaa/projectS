@@ -1,0 +1,70 @@
+[gd_scene load_steps=3 format=3 uid="uid://be7ax53qjfvi0"]
+
+[ext_resource type="Script" path="res://scripts/over.gd" id="1_6rigj"]
+[ext_resource type="Theme" uid="uid://cy2av2haqga2r" path="res://theme/new_theme.tres" id="1_aoek1"]
+
+[node name="Node2D" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_6rigj")
+
+[node name="TextureRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -291.5
+offset_top = 126.695
+offset_right = 291.5
+offset_bottom = 189.695
+grow_horizontal = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("1_aoek1")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 51
+text = "so this is the end huh"
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -108.0
+offset_top = -55.0
+offset_right = 108.0
+offset_bottom = 55.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="try" type="Button" parent="VBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("1_aoek1")
+theme_override_font_sizes/font_size = 36
+text = "try again"
+
+[node name="back" type="Button" parent="VBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("1_aoek1")
+theme_override_font_sizes/font_size = 36
+text = "back to menu"
+
+[connection signal="pressed" from="VBoxContainer2/try" to="." method="_on_try_pressed"]
+[connection signal="pressed" from="VBoxContainer2/back" to="." method="_on_back_pressed"]

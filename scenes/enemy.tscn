@@ -1,10 +1,76 @@
-[gd_scene load_steps=15 format=3 uid="uid://df4k86d23dcsc"]
+[gd_scene load_steps=24 format=3 uid="uid://df4k86d23dcsc"]
 
-[ext_resource type="Script" path="res://scenes/enemy.gd" id="1_eyg8k"]
+[ext_resource type="Script" path="res://scripts/enemy.gd" id="1_eyg8k"]
 [ext_resource type="PackedScene" uid="uid://bqtxqrua1aq1k" path="res://scenes/lantern.tscn" id="2_vn8qu"]
-[ext_resource type="Texture2D" uid="uid://bl74fvq668y3s" path="res://assets/arts/target.png" id="3_yb7b2"]
+[ext_resource type="Texture2D" uid="uid://bl74fvq668y3s" path="res://assets/arts/enemy_sprites/target.png" id="3_yb7b2"]
+[ext_resource type="Texture2D" uid="uid://b56rp6my8yo24" path="res://assets/arts/enemy_sprites/enemy.png" id="4_h32gk"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nasl5"]
+atlas = ExtResource("4_h32gk")
+region = Rect2(0, 4096, 1024, 1024)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gjgc6"]
+atlas = ExtResource("4_h32gk")
+region = Rect2(0, 0, 1024, 1024)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ou1y8"]
+atlas = ExtResource("4_h32gk")
+region = Rect2(0, 2048, 1024, 1024)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sln8g"]
+atlas = ExtResource("4_h32gk")
+region = Rect2(0, 3072, 1024, 1024)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cdkua"]
+atlas = ExtResource("4_h32gk")
+region = Rect2(0, 1024, 1024, 1024)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lwto2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nasl5")
+}],
+"loop": true,
+"name": &"back",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gjgc6")
+}],
+"loop": true,
+"name": &"front",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ou1y8")
+}],
+"loop": true,
+"name": &"side",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sln8g")
+}],
+"loop": true,
+"name": &"side-135",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cdkua")
+}],
+"loop": true,
+"name": &"side-45",
+"speed": 5.0
+}]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_mpxsm"]
+radius = 0.2
+height = 1.85
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_7304j"]
 radius = 0.25
@@ -23,7 +89,7 @@ radius = 10.0
 size = Vector3(0.1, 0.1, 0.1)
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_snny6"]
-height = 0.1
+height = 0.5
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_er05f"]
 height = 0.2
@@ -38,24 +104,43 @@ size = Vector3(0.5, 2.00293, 0.707889)
 [sub_resource type="QuadMesh" id="QuadMesh_4c5t4"]
 size = Vector2(0.5, 0.5)
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_psvsc"]
+top_radius = 0.01
+bottom_radius = 0.01
+height = 1.75
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_io4o3"]
+top_radius = 0.0
+bottom_radius = 0.02
+height = 0.5
+
 [node name="enemy" type="CharacterBody3D"]
 script = ExtResource("1_eyg8k")
 is_patrolling_guard = true
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
+transform = Transform3D(0.195, 0, 0, 0, 0.195, 0, 0, 0, 0.195, 0, 0.0920058, 0)
+billboard = 2
+sprite_frames = SubResource("SpriteFrames_lwto2")
+animation = &"side-45"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_mpxsm")
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.137268, 0)
+visible = false
 size = Vector3(0.48, 1.72546, 0.312)
 
 [node name="CSGBox3D" type="CSGBox3D" parent="CSGBox3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.442816, 0)
+visible = false
 operation = 2
 size = Vector3(0.176331, 0.851563, 1)
 
 [node name="head" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.760182, 0)
+visible = false
 mesh = SubResource("CapsuleMesh_7304j")
 surface_material_override/0 = SubResource("StandardMaterial3D_cdjx3")
 
@@ -102,6 +187,11 @@ autostart = true
 [node name="player_sound_manager" type="Node3D" parent="."]
 transform = Transform3D(0.405, 0, 0, 0, 0.405, 0, 0, 0, 0.405, 0, 0, 0)
 
+[node name="AudioStreamPlayer3D2" type="AudioStreamPlayer3D" parent="player_sound_manager"]
+transform = Transform3D(2.46914, 0, 0, 0, 2.46914, 0, 0, 0, 2.46914, 0, 0.260502, 0)
+volume_db = -10.0
+unit_size = 1.0
+
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="player_sound_manager"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.28075, 0)
 
@@ -110,15 +200,17 @@ visible = false
 mesh = SubResource("BoxMesh_w8wrh")
 
 [node name="lantern" parent="." instance=ExtResource("2_vn8qu")]
-transform = Transform3D(0.275, 0, 0, 0, 0.275, 0, 0, 0, 0.275, -0.387693, 0.371055, -0.57429)
+transform = Transform3D(0.275, 0, 0, 0, 0.275, 0, 0, 0, 0.275, -0.192535, 0.550924, -0.208532)
 
 [node name="stepcast3d" type="ShapeCast3D" parent="."]
+enabled = false
 shape = SubResource("CylinderShape3D_snny6")
 
 [node name="around_detect" type="ShapeCast3D" parent="."]
 shape = SubResource("CylinderShape3D_er05f")
 target_position = Vector3(0, 0, 0)
 max_results = 1
+collision_mask = 3
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
@@ -167,7 +259,29 @@ shape = SubResource("BoxShape3D_4tnkq")
 
 [node name="target_area" type="MeshInstance3D" parent="back_attack_detector"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.462881, 0.157489)
+visible = false
 mesh = SubResource("QuadMesh_4c5t4")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.01087, 0)
+billboard = 1
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.126807, -0.0728923, 0.361531)
+mesh = SubResource("CylinderMesh_psvsc")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05503, 0)
+mesh = SubResource("CylinderMesh_io4o3")
+
+[node name="action_timer" type="Timer" parent="."]
+one_shot = true
+
+[node name="door_checker" type="RayCast3D" parent="."]
+target_position = Vector3(0, 0, -1)
+collision_mask = 1048577
+collide_with_areas = true
+collide_with_bodies = false
 
 [connection signal="body_entered" from="head/enemy_FOV" to="." method="_on_enemy_fov_body_entered"]
 [connection signal="body_exited" from="head/enemy_FOV" to="." method="_on_enemy_fov_body_exited"]
@@ -176,3 +290,6 @@ mesh = SubResource("QuadMesh_4c5t4")
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
 [connection signal="body_entered" from="back_attack_detector" to="." method="_on_hit_area_body_entered"]
 [connection signal="body_exited" from="back_attack_detector" to="." method="_on_back_attack_detector_body_exited"]
+[connection signal="timeout" from="action_timer" to="." method="_on_action_timer_timeout"]
+
+[editable path="lantern"]

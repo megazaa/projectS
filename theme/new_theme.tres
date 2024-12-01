@@ -1,0 +1,27 @@
+[gd_resource type="Theme" load_steps=6 format=3 uid="uid://cy2av2haqga2r"]
+
+[ext_resource type="Texture2D" uid="uid://bes3k86kea6el" path="res://assets/pics/old-paper-1151109.png" id="1_e1ka8"]
+[ext_resource type="FontFile" uid="uid://ctn5q7wl487rw" path="res://theme/fonts/Vinque Rg.otf" id="2_c7jt1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_raigt"]
+bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_usftw"]
+bg_color = Color(1, 0, 0, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_th313"]
+texture = ExtResource("1_e1ka8")
+texture_margin_left = 85.0
+texture_margin_top = 45.0
+texture_margin_right = 50.0
+texture_margin_bottom = 65.0
+expand_margin_bottom = 105.0
+
+[resource]
+default_font = ExtResource("2_c7jt1")
+Button/colors/font_hover_color = Color(0, 0, 0, 1)
+Button/colors/font_pressed_color = Color(1, 1, 1, 1)
+Button/styles/hover = SubResource("StyleBoxFlat_raigt")
+Button/styles/pressed = SubResource("StyleBoxFlat_usftw")
+Label/colors/font_color = Color(0.0885599, 0.0885599, 0.0885599, 1)
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_th313")

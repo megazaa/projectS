@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3 uid="uid://p2bkcp2ew53j"]
+
+[ext_resource type="Script" path="res://scripts/interact_area.gd" id="1_mljid"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hnpvb"]
+
+[node name="interact_area" type="Area3D"]
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("1_mljid")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_hnpvb")
+
+[node name="Label3D" type="Label3D" parent="."]
+visible = false
+layers = 1024
+billboard = 1
+texture_filter = 0
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

@@ -1,0 +1,288 @@
+[gd_scene load_steps=20 format=3 uid="uid://bb64n4vrr6wtu"]
+
+[ext_resource type="Script" path="res://scripts/quests_room.gd" id="1_jl66c"]
+[ext_resource type="PackedScene" uid="uid://bxe32q67lr32p" path="res://scenes/player.tscn" id="1_klwrw"]
+[ext_resource type="PackedScene" uid="uid://p2bkcp2ew53j" path="res://scenes/interact_area.tscn" id="2_q7rvp"]
+[ext_resource type="PackedScene" uid="uid://b8whpicowhogy" path="res://scenes/paper.tscn" id="3_bg785"]
+[ext_resource type="Resource" uid="uid://d2tfgueda7vsl" path="res://resources/quest_0.tres" id="4_e5jlw"]
+[ext_resource type="Theme" uid="uid://cy2av2haqga2r" path="res://theme/new_theme.tres" id="5_tgwhd"]
+[ext_resource type="Texture2D" uid="uid://cfxgy25lfw2kx" path="res://assets/pics/mail_open.png" id="6_th584"]
+[ext_resource type="Texture2D" uid="uid://cknrdfutjqp0" path="res://assets/pics/mail_bg.png" id="7_lfr1s"]
+[ext_resource type="PackedScene" uid="uid://du3vs0svrdt0x" path="res://scenes/bed.tscn" id="9_p00iu"]
+[ext_resource type="Script" path="res://scenes/interact_area.gd" id="10_nqecc"]
+
+[sub_resource type="Gradient" id="Gradient_sb5ej"]
+offsets = PackedFloat32Array(0.00913242, 1)
+colors = PackedColorArray(1, 0, 0, 1, 0.987713, 0.476095, 1.54018e-06, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_qspxm"]
+gradient = SubResource("Gradient_sb5ej")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_x3k3a"]
+lifetime_randomness = 1.0
+emission_shape = 3
+emission_box_extents = Vector3(0.01, 0.01, 0.01)
+direction = Vector3(0, 1, 0)
+spread = 0.0
+initial_velocity_max = 0.1
+gravity = Vector3(0, 0, 0)
+tangential_accel_min = -2.23517e-06
+tangential_accel_max = 0.0999978
+scale_min = 0.1
+scale_max = 0.5
+color_ramp = SubResource("GradientTexture1D_qspxm")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cv3d8"]
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+
+[sub_resource type="SphereMesh" id="SphereMesh_yfq8s"]
+material = SubResource("StandardMaterial3D_cv3d8")
+radius = 0.05
+height = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_anpuf"]
+diffuse_mode = 3
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_viyxs"]
+material = SubResource("StandardMaterial3D_anpuf")
+top_radius = 0.01
+bottom_radius = 0.01
+height = 0.1
+radial_segments = 6
+rings = 0
+
+[sub_resource type="Theme" id="Theme_lix11"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hnpvb"]
+
+[node name="quests_room" type="Node3D"]
+script = ExtResource("1_jl66c")
+
+[node name="player" parent="." instance=ExtResource("1_klwrw")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.99871, 0.880693)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.451003, 0.892523, 0, -0.892523, 0.451003, -0.23591, -4.90383, -1.91067)
+cull_mask = 1
+
+[node name="Camera3D2" type="Camera3D" parent="."]
+transform = Transform3D(0.959934, -0.184499, 0.21092, 0.0260649, 0.808198, 0.588334, -0.279013, -0.559264, 0.780626, 1.85895, -4.90383, -1.46441)
+cull_mask = 1
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.60797, 0)
+use_collision = true
+size = Vector3(6, 6, 6)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="CSGBox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0)
+operation = 2
+use_collision = true
+size = Vector3(4.78, 5.47, 5)
+
+[node name="table" type="CSGBox3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.242169, -5.61439, -2.17912)
+use_collision = true
+size = Vector3(0.659698, 0.764648, 1.27393)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="table"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.130035, -0.017983)
+operation = 2
+size = Vector3(1, 0.77594, 1.05273)
+
+[node name="candle" type="Node3D" parent="table"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.128507, -0.114413, -0.473442)
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="table/candle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.613024, 0)
+amount = 20
+process_material = SubResource("ParticleProcessMaterial_x3k3a")
+draw_pass_1 = SubResource("SphereMesh_yfq8s")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="table/candle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.542609, 0)
+mesh = SubResource("CylinderMesh_viyxs")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="table/candle/MeshInstance3D"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0.0846262, 0)
+light_color = Color(1, 0.721569, 0.415686, 1)
+light_energy = 0.2
+omni_attenuation = 2.0
+
+[node name="paper" parent="table" instance=ExtResource("3_bg785")]
+transform = Transform3D(-1.74846e-08, 0, 0.4, 0, 0.4, 0, -0.4, 0, -1.74846e-08, 0.100934, 0.4, -7.45058e-09)
+quest = ExtResource("4_e5jlw")
+
+[node name="interact_area" parent="table" instance=ExtResource("2_q7rvp")]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+visible = false
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = 4.0
+offset_right = 704.0
+offset_bottom = 1028.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.595, 0.595)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("6_th584")
+stretch_mode = 2
+
+[node name="TextureRect2" type="TextureRect" parent="CanvasLayer/TextureRect"]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = 376.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+texture = ExtResource("7_lfr1s")
+stretch_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+z_index = -99
+z_as_relative = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.392157)
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer"]
+z_index = -1
+custom_minimum_size = Vector2(-3.01, 8.215)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -232.0
+offset_top = -276.0
+offset_right = 200.0
+offset_bottom = 168.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme = ExtResource("5_tgwhd")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/PanelContainer"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="CanvasLayer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "from "
+
+[node name="text" type="Label" parent="CanvasLayer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(7.365, 0)
+layout_mode = 2
+theme = SubResource("Theme_lix11")
+text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+autowrap_mode = 2
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="CanvasLayer/PanelContainer/VBoxContainer"]
+z_index = 5
+layout_mode = 2
+
+[node name="accept" type="Button" parent="CanvasLayer/PanelContainer/VBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "accept"
+
+[node name="cancel" type="Button" parent="CanvasLayer/PanelContainer/VBoxContainer/VBoxContainer2"]
+z_index = 120
+y_sort_enabled = true
+layout_mode = 2
+keep_pressed_outside = true
+text = "cancel"
+
+[node name="bed" parent="." instance=ExtResource("9_p00iu")]
+transform = Transform3D(1.31134e-07, 0, -1, 0, 1, 0, 1, 0, 1.31134e-07, 1.85898, -5.42555, -2.46652)
+
+[node name="interact_area" type="Area3D" parent="bed"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.80071, -0.45983, 2.38419e-07)
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("10_nqecc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="bed/interact_area"]
+shape = SubResource("BoxShape3D_hnpvb")
+
+[node name="Label3D" type="Label3D" parent="bed/interact_area"]
+visible = false
+layers = 1024
+billboard = 1
+texture_filter = 0
+
+[node name="Control" type="Control" parent="bed"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="cant" type="VBoxContainer" parent="bed/Control"]
+visible = false
+layout_mode = 0
+offset_left = -67.0
+offset_top = -82.0
+offset_right = -27.0
+offset_bottom = -42.0
+
+[node name="Label" type="Label" parent="bed/Control/cant"]
+layout_mode = 2
+text = "\"I can't sleep yet\""
+
+[node name="HBoxContainer" type="HBoxContainer" parent="bed/Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -124.0
+offset_top = -26.5
+offset_right = 124.0
+offset_bottom = 26.5
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("5_tgwhd")
+
+[node name="yes" type="Button" parent="bed/Control/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 36
+text = "yes"
+icon_alignment = 1
+
+[node name="no" type="Button" parent="bed/Control/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 36
+text = "no"
+icon_alignment = 1
+
+[connection signal="pressed" from="CanvasLayer/PanelContainer/VBoxContainer/VBoxContainer2/accept" to="." method="_on_accept_pressed"]
+[connection signal="pressed" from="CanvasLayer/PanelContainer/VBoxContainer/VBoxContainer2/cancel" to="." method="_on_cancel_pressed"]
+[connection signal="body_entered" from="bed/interact_area" to="bed/interact_area" method="_on_body_entered"]
+[connection signal="body_exited" from="bed/interact_area" to="bed/interact_area" method="_on_body_exited"]
+[connection signal="pressed" from="bed/Control/HBoxContainer/yes" to="bed/interact_area" method="_on_yes_pressed"]
+[connection signal="pressed" from="bed/Control/HBoxContainer/no" to="bed/interact_area" method="_on_no_pressed"]

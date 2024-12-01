@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://dmlid25loqc4r"]
+
+[ext_resource type="PackedScene" uid="uid://bwoqmjgmswyuc" path="res://assets/models/floor.glb" id="1_ohb5w"]
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_pfs3r"]
+data = PackedVector3Array(-1, -0.0732, 1, 1, -0.0732, -1, -1, -0.0732, -1, -1, -0.0732, 1, 1, -0.0732, 1, 1, -0.0732, -1, -1, 0.0732, 1, 1, 0.0732, -1, 1, 0.0732, 1, -1, 0.0732, 1, -1, 0.0732, -1, 1, 0.0732, -1, 1, -0.0732, -1, -1, 0.0732, -1, -1, -0.0732, -1, 1, -0.0732, -1, 1, 0.0732, -1, -1, 0.0732, -1, -1, -0.0732, 1, 1, 0.0732, 1, 1, -0.0732, 1, -1, -0.0732, 1, -1, 0.0732, 1, 1, 0.0732, 1, 1, -0.0732, 1, 1, 0.0732, -1, 1, -0.0732, -1, 1, -0.0732, 1, 1, 0.0732, 1, 1, 0.0732, -1, -1, -0.0732, -1, -1, 0.0732, 1, -1, -0.0732, 1, -1, -0.0732, -1, -1, 0.0732, -1, -1, 0.0732, 1)
+
+[node name="floor" instance=ExtResource("1_ohb5w")]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Plane" index="0"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Plane/StaticBody3D" index="0"]
+shape = SubResource("ConcavePolygonShape3D_pfs3r")

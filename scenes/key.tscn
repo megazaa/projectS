@@ -1,0 +1,29 @@
+[gd_scene load_steps=6 format=3 uid="uid://857a1hhs2yqi"]
+
+[ext_resource type="Texture2D" uid="uid://3bu1u740ws6h" path="res://assets/arts/items_sprites/key_SPRITES.png" id="1_5kn43"]
+[ext_resource type="Script" path="res://scenes/interact_script.gd" id="2_p7q10"]
+[ext_resource type="Script" path="res://resources/interact_res.gd" id="3_or4rx"]
+
+[sub_resource type="Resource" id="Resource_ut8qq"]
+script = ExtResource("3_or4rx")
+item_name = "kitchen key"
+types_name = 1
+key_for = ""
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_n57vb"]
+
+[node name="key" type="Node3D"]
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+billboard = 1
+shaded = true
+texture = ExtResource("1_5kn43")
+
+[node name="interact" type="Area3D" parent="." groups=["interactable"]]
+collision_layer = 1048577
+script = ExtResource("2_p7q10")
+item = SubResource("Resource_ut8qq")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="interact"]
+shape = SubResource("BoxShape3D_n57vb")

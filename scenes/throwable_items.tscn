@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://db0jdm624dw4w"]
 
-[ext_resource type="Script" path="res://scenes/throwable_items.gd" id="1_mggyi"]
+[ext_resource type="Script" path="res://scripts/throwable_items.gd" id="1_mggyi"]
 
 [sub_resource type="TubeTrailMesh" id="TubeTrailMesh_64cwy"]
 radius = 0.1

@@ -1,0 +1,166 @@
+[gd_scene load_steps=11 format=3 uid="uid://c3ygqo0oy8tiu"]
+
+[ext_resource type="PackedScene" uid="uid://uj45rts3c8yx" path="res://assets/models/door.glb" id="1_bw4to"]
+[ext_resource type="Script" path="res://scripts/menu.gd" id="1_kb5sk"]
+[ext_resource type="PackedScene" uid="uid://df4k86d23dcsc" path="res://scenes/enemy.tscn" id="1_x0fnd"]
+[ext_resource type="Script" path="res://resources/enemy_Man.gd" id="4_m0vse"]
+[ext_resource type="Theme" uid="uid://cy2av2haqga2r" path="res://theme/new_theme.tres" id="4_u4k1c"]
+
+[sub_resource type="Environment" id="Environment_gevp1"]
+background_mode = 1
+ambient_light_source = 2
+ambient_light_color = Color(0.255659, 0.255659, 0.255659, 1)
+ambient_light_energy = 0.2
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_l4eq8"]
+vertices = PackedVector3Array(-0.7675, 0.7, -7.885, -0.7675, 0.7, 7.865, 0.9825, 0.7, 7.865, 0.9825, 0.7, -7.885, 8.9825, 5.4, -3.635, 8.9825, 5.4, 3.615, 9.7325, 5.4, 3.615, 9.7325, 5.4, -3.635)
+polygons = [PackedInt32Array(3, 2, 0), PackedInt32Array(0, 2, 1), PackedInt32Array(7, 6, 4), PackedInt32Array(4, 6, 5)]
+cell_height = 0.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_ggdc6"]
+size = Vector3(2.535, 1, 16.77)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_qk65m"]
+data = PackedVector3Array(-0.5, 0.5, 8.385, 0.5, 0.5, 8.385, -0.5, -0.5, 8.385, 0.5, 0.5, 8.385, 0.5, -0.5, 8.385, -0.5, -0.5, 8.385, 0.5, 0.5, -8.385, -0.5, 0.5, -8.385, 0.5, -0.5, -8.385, -0.5, 0.5, -8.385, -0.5, -0.5, -8.385, 0.5, -0.5, -8.385, 0.5, 0.5, 8.385, 0.5, 0.5, -8.385, 0.5, -0.5, 8.385, 0.5, 0.5, -8.385, 0.5, -0.5, -8.385, 0.5, -0.5, 8.385, -0.5, 0.5, -8.385, -0.5, 0.5, 8.385, -0.5, -0.5, -8.385, -0.5, 0.5, 8.385, -0.5, -0.5, 8.385, -0.5, -0.5, -8.385, 0.5, 0.5, 8.385, -0.5, 0.5, 8.385, 0.5, 0.5, -8.385, -0.5, 0.5, 8.385, -0.5, 0.5, -8.385, 0.5, 0.5, -8.385, -0.5, -0.5, 8.385, 0.5, -0.5, 8.385, -0.5, -0.5, -8.385, 0.5, -0.5, 8.385, 0.5, -0.5, -8.385, -0.5, -0.5, -8.385)
+
+[sub_resource type="Resource" id="Resource_dsh34"]
+script = ExtResource("4_m0vse")
+node_name = "guard_position_points"
+
+[node name="menu" type="Node3D"]
+script = ExtResource("1_kb5sk")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -1.5927, 0.858319, -3.03159)
+fov = 109.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_gevp1")
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="WorldEnvironment"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -1.29889, 1.32338, 0.45406)
+visible = false
+light_color = Color(1, 0.721569, 0.415686, 1)
+light_energy = 0.477
+light_indirect_energy = 1.627
+shadow_enabled = true
+omni_range = 2.533
+omni_attenuation = 0.827
+omni_shadow_mode = 0
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.6801, 0.856628, -7.50946)
+size = Vector3(18.9566, 5.29883, 7.34863)
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="CSGBox3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.92901, 0.523314, -1.3885)
+light_color = Color(0.698039, 0.384314, 0, 1)
+light_energy = 2.092
+shadow_enabled = true
+shadow_reverse_cull_face = true
+shadow_opacity = 0.9
+omni_range = 14.046
+omni_attenuation = 1.393
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="CSGBox3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0749435, 0.0395598, 0.174782)
+operation = 2
+size = Vector3(18.9566, 4.79674, 6.42133)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="CSGBox3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.42061, 0.0395598, -3.17586)
+operation = 2
+size = Vector3(1.96547, 4.79674, 6.95421)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.913896, 0.74231, 0.157364)
+size = Vector3(1.68048, 5, 7.92496)
+
+[node name="CSGCombiner3D" type="CSGCombiner3D" parent="CSGBox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.690077, 0, 0)
+operation = 2
+
+[node name="door" parent="CSGBox3D/CSGCombiner3D" instance=ExtResource("1_bw4to")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0486145, -0.860199, -0.157364)
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.44322, -2, 0.100815)
+navigation_mesh = SubResource("NavigationMesh_l4eq8")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D"]
+mesh = SubResource("BoxMesh_ggdc6")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="NavigationRegion3D/MeshInstance3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/MeshInstance3D/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_qk65m")
+
+[node name="guard_position_points" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.40475, -0.268218, 1.4492)
+
+[node name="point_1" type="Marker3D" parent="guard_position_points"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.264257, -1.19411, -9.44137)
+
+[node name="point_2" type="Marker3D" parent="guard_position_points"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0319414, -1.1106, 6.31176)
+
+[node name="enemy" parent="." instance=ExtResource("1_x0fnd")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.40475, -0.516776, 2.3051)
+path = SubResource("Resource_dsh34")
+
+[node name="AnimatedSprite3D" parent="enemy" index="0"]
+alpha_cut = 2
+
+[node name="SpotLight3D" parent="enemy/lantern" index="0"]
+transform = Transform3D(0.594539, 0, -3.58743, 0, 3.63636, 0, 3.58743, 0, 0.594539, -13.1179, 0, 0.429549)
+spot_range = 13.857
+spot_angle = 41.94
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -64.0
+offset_top = -4.0
+offset_right = 64.0
+offset_bottom = 109.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("4_u4k1c")
+
+[node name="start" type="Button" parent="Control/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "start"
+
+[node name="options" type="Button" parent="Control/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "options"
+
+[node name="exit" type="Button" parent="Control/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "exit"
+
+[node name="Panel" type="Panel" parent="Control"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[connection signal="pressed" from="Control/VBoxContainer/start" to="." method="_on_start_pressed"]
+[connection signal="pressed" from="Control/VBoxContainer/exit" to="." method="_on_exit_pressed"]
+
+[editable path="enemy"]
+[editable path="enemy/lantern"]

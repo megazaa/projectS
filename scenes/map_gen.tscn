@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://bod3nlxxksqub"]
 
-[ext_resource type="Script" path="res://scenes/map_gen.gd" id="1_a12nd"]
+[ext_resource type="Script" path="res://scripts/map_gen.gd" id="1_a12nd"]
 [ext_resource type="MeshLibrary" uid="uid://b2ph8vd7t1p78" path="res://assets/box_colli_n.tres" id="2_4bwwm"]
 
 [node name="map" type="Node3D"]

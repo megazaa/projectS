@@ -1,0 +1,133 @@
+[gd_scene load_steps=12 format=4 uid="uid://bq18clqmgxvm5"]
+
+[ext_resource type="Script" path="res://scenes/area_3d.gd" id="2_xjotp"]
+[ext_resource type="Script" path="res://resources/interact_res.gd" id="3_o7oxh"]
+
+[sub_resource type="Animation" id="Animation_hn765"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_ntlrp"]
+resource_name = "close_door"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 1.5708, 0), Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_e36ol"]
+resource_name = "open_door"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 1.5708, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_snl8t"]
+_data = {
+"RESET": SubResource("Animation_hn765"),
+"close_door": SubResource("Animation_ntlrp"),
+"open_door": SubResource("Animation_e36ol")
+}
+
+[sub_resource type="Resource" id="Resource_5wqqv"]
+script = ExtResource("3_o7oxh")
+item_name = "kitchen door"
+types_name = null
+key = null
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_fnvan"]
+data = PackedVector3Array(-0.25, -1.57, -0.5, -0.25, 1.43, -1, -0.25, 1.63, -0.5, -0.25, -1.57, -0.5, -0.25, -1.57, -1, -0.25, 1.43, -1, -0.25, -1.57, -1, 0.25, 1.43, -1, -0.25, 1.43, -1, -0.25, -1.57, -1, 0.25, -1.57, -1, 0.25, 1.43, -1, 0.25, -1.57, 0.5, 0.25, 1.43, 1, 0.25, 1.63, 0.5, 0.25, -1.57, 0.5, 0.25, -1.57, 1, 0.25, 1.43, 1, 0.25, -1.57, 1, -0.25, 1.43, 1, 0.25, 1.43, 1, 0.25, -1.57, 1, -0.25, -1.57, 1, -0.25, 1.43, 1, -0.25, -1.57, 0.5, 0.25, -1.57, 1, 0.25, -1.57, 0.5, -0.25, -1.57, 0.5, -0.25, -1.57, 1, 0.25, -1.57, 1, 0.25, 1.63, 0.5, -0.25, 1.43, 1, -0.25, 1.63, 0.5, 0.25, 1.63, 0.5, 0.25, 1.43, 1, -0.25, 1.43, 1, 0.25, 1.63, -0.5, -0.25, 1.73, 0, -0.25, 1.63, -0.5, 0.25, 1.63, -0.5, 0.25, 1.73, 0, -0.25, 1.73, 0, -0.25, -1.57, -0.5, 0.25, -1.57, 0, 0.25, -1.57, -0.5, -0.25, -1.57, -0.5, -0.25, -1.57, 0, 0.25, -1.57, 0, 0.25, -1.57, -0.5, 0.25, 1.73, 0, 0.25, 1.63, -0.5, 0.25, -1.57, -0.5, 0.25, -1.57, 0, 0.25, 1.73, 0, -0.25, -1.57, 0.5, -0.25, 1.73, 0, -0.25, 1.63, 0.5, -0.25, -1.57, 0.5, -0.25, -1.57, 0, -0.25, 1.73, 0, -0.25, -1.57, 1, -0.25, 1.63, 0.5, -0.25, 1.43, 1, -0.25, -1.57, 1, -0.25, -1.57, 0.5, -0.25, 1.63, 0.5, 0.25, 1.73, 0, -0.25, 1.63, 0.5, -0.25, 1.73, 0, 0.25, 1.73, 0, 0.25, 1.63, 0.5, -0.25, 1.63, 0.5, -0.25, -1.57, 0, 0.25, -1.57, 0.5, 0.25, -1.57, 0, -0.25, -1.57, 0, -0.25, -1.57, 0.5, 0.25, -1.57, 0.5, 0.25, -1.57, 0, 0.25, 1.63, 0.5, 0.25, 1.73, 0, 0.25, -1.57, 0, 0.25, -1.57, 0.5, 0.25, 1.63, 0.5, 0.25, -1.57, -1, 0.25, 1.63, -0.5, 0.25, 1.43, -1, 0.25, -1.57, -1, 0.25, -1.57, -0.5, 0.25, 1.63, -0.5, -0.25, -1.57, -1, 0.25, -1.57, -0.5, 0.25, -1.57, -1, -0.25, -1.57, -1, -0.25, -1.57, -0.5, 0.25, -1.57, -0.5, 0.25, 1.43, -1, -0.25, 1.63, -0.5, -0.25, 1.43, -1, 0.25, 1.43, -1, 0.25, 1.63, -0.5, -0.25, 1.63, -0.5, -0.25, -1.57, 0, -0.25, 1.63, -0.5, -0.25, 1.73, 0, -0.25, -1.57, 0, -0.25, -1.57, -0.5, -0.25, 1.63, -0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k3jpk"]
+resource_name = "Material.002"
+cull_mode = 2
+albedo_color = Color(0.44001, 0.202403, 0.202403, 1)
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_8n01m"]
+_surfaces = [{
+"aabb": AABB(-0.25, -1.57, -1, 0.5, 3.3, 2),
+"format": 34896613377,
+"index_count": 108,
+"index_data": PackedByteArray("EgADABAAEgACAAMAAgAHAAMAAgAGAAcADwAFAA0ADwAEAAUABAABAAUABAAAAAEADAAEAA8ADAAAAAQADQABAA4ADQAFAAEAEwAJABAAEwALAAkAEgAKABEAEgAIAAoAEQALABMAEQAKAAsADAAJAA4ADAAIAAkAAAAOAAEAAAAMAA4ACwAOAAkACwANAA4ACAAPAAoACAAMAA8ACgANAAsACgAPAA0ABgATAAcABgARABMAAgARAAYAAgASABEABwAQAAMABwATABAACAAQAAkACAASABAA"),
+"lods": [0.170788, PackedByteArray("CAADABAACAACAAMAAAAIABAAAAAQAAEAAgAHAAMAAgAGAAcACgAFAAsACgAEAAUABgAKAAsABgALAAcABAABAAUABAAAAAEACAAEAAoACAAAAAQAAgAIAAoAAgAKAAYACwABABAACwAFAAEABwALABAABwAQAAMA")],
+"name": "Material.002",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 20,
+"vertex_data": PackedByteArray("AAAAAP//AAAAALno//8AAAAAAAAAAAAAAAC56AAAAAD//wAA//8AAP//uej//wAA//8AAAAAAAD//7noAAAAAAAAAAD/fwAAAAD///9/AAD//wAA/38AAP//////fwAAAAAAAP+/AAD//z34/78AAAAAPfj/vwAA//8AAP+/AAAAAD34/z8AAP//AAD/PwAAAAAAAP8/AAD//z34/z8AAA==")
+}]
+blend_shape_mode = 0
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_ig4c8"]
+resource_name = "door_Cube_121"
+_surfaces = [{
+"aabb": AABB(-0.25, -1.57, -1, 0.5, 3.3, 2),
+"attribute_data": PackedByteArray("78FFF/8f/z//X///78H//+/B////n////1//v/8f/3//X/+//5//v+/BHGb/n/+/JptFF/9f/z8mmwAAJpv//7no//8mm7no/1//f/9f/38AAAAA/5//f7noHGYAALno/x//X/9f/9/vwQW278EFtv+f/9//X/9fk00AALnoBba56AW2k03///8f/0//X//vueiA27nogNtcdD3478GA2+/BgNv/n//v/1//T1x0AADvwY+O78GPjv+f/8//X/9vySYAAP8f/2//X//PueiPjrnoj47JJj34"),
+"format": 34896613399,
+"index_count": 108,
+"index_data": PackedByteArray("MgALAC4AMgAIAAsABgAVAAkABgASABUAKwARACYAKwAOABEADAADAA8ADAAAAAMAIgANACoAIgABAA0AJAAEACcAJAAQAAQANAAbAC0ANAAgABsAMQAdAC8AMQAYAB0AMAAhADUAMAAeACEAIwAcACkAIwAZABwAAgApAAUAAgAjACkAHwAoABoAHwAlACgAGAAqAB0AGAAiACoAHgAmACEAHgArACYAFAA1ABcAFAAwADUABwAvABMABwAxAC8AFgAsAAoAFgAzACwAGQAuABwAGQAyAC4A"),
+"lods": [0.170788, PackedByteArray("GQALAC4AGQAIAAsAAgAZAC4AAgAuAAUABgAVAAkABgASABUAHgARACEAHgAOABEAFAAeACEAFAAhABcADAADAA8ADAAAAAMAGAANAB0AGAABAA0ABwAYAB0ABwAdABMAHwAEACwAHwAQAAQAFgAfACwAFgAsAAoA")],
+"material": SubResource("StandardMaterial3D_k3jpk"),
+"name": "Material.002",
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 54,
+"vertex_data": PackedByteArray("AAAAAP////8AAAAA////vwAAAAD//1TVAAC56P////8AALno//9+sAAAuej//1TVAAAAAAAA//8AAAAAAAD/vwAAAAAAAFTVAAC56AAA//8AALnoAACAzwAAuegAAFTV//8AAP///////wAA////v///AAD///////+56P///////7no//9+sP//uej///////8AAAAA/////wAAAAD/v///AAAAAP////+56AAA/////7noAACAz///uegAAP//AAAAAP9//78AAAAA/39U1QAA////f/S3AAD///9/CcgAAP///39U1f//AAD/f/+///8AAP9//////////3/0t///////fwnI//////9///8AAAAA/7//vwAAAAD/v1TV//89+P+/frD//z34/7/0t///Pfj/v///AAA9+P+/frAAAD34/7/0twAAPfj/v1TV//8AAP+//7///wAA/7///wAAPfj/P4DPAAA9+P8/CcgAAD34/z9U1f//AAD/P/+///8AAP8///8AAAAA/z//vwAAAAD/P1TV//89+P8/gM///z34/z8JyP//Pfj/P////3//fwAA/39U1VTV/3//f////39U1VTV/7//vwAA/39U1VTV/7//v/7//39U1VTV/3//fwAA/3//v/9//3//f////3//v/9//7//vwAA/3//v/9//7//v/7//3//v/9/AAD/f1TVVNX///9/////f1TVVNUAAP9//7//f////3////9//7//fwAA/39U1VTV////f////3//v/9/////f////39U1VTVAAD/f/+//3/+//9/////f1TVVNUAAP9//7//fwAA/39U1VTV////f////3//v/9/")
+}]
+blend_shape_mode = 0
+shadow_mesh = SubResource("ArrayMesh_8n01m")
+
+[node name="hinge" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00959587, 1.71136, 0.0644393)
+
+[node name="door_ani" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_snl8t")
+}
+
+[node name="interact" type="Area3D" parent="." groups=["interactable"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.39824)
+collision_layer = 1048577
+script = ExtResource("2_xjotp")
+item = SubResource("Resource_5wqqv")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="interact"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.411893)
+shape = SubResource("ConcavePolygonShape3D_fnvan")
+
+[node name="Cube_136" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.98635)
+mesh = SubResource("ArrayMesh_ig4c8")
+skeleton = NodePath("")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Cube_136"]
+collision_layer = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Cube_136/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_fnvan")

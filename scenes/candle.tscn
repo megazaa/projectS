@@ -1,0 +1,56 @@
+[gd_scene load_steps=8 format=3 uid="uid://bvyhnc2yfj4xn"]
+
+[sub_resource type="Gradient" id="Gradient_sb5ej"]
+offsets = PackedFloat32Array(0.00913242, 1)
+colors = PackedColorArray(1, 0, 0, 1, 0.987713, 0.476095, 1.54018e-06, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_qspxm"]
+gradient = SubResource("Gradient_sb5ej")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_x3k3a"]
+lifetime_randomness = 1.0
+emission_shape = 3
+emission_box_extents = Vector3(0.05, 0.05, 0.05)
+direction = Vector3(0, 1, 0)
+spread = 0.0
+initial_velocity_max = 0.5
+gravity = Vector3(0, 0, 0)
+tangential_accel_min = -2.23517e-06
+tangential_accel_max = 0.499998
+scale_min = 0.5
+color_ramp = SubResource("GradientTexture1D_qspxm")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cv3d8"]
+blend_mode = 1
+shading_mode = 0
+vertex_color_use_as_albedo = true
+
+[sub_resource type="SphereMesh" id="SphereMesh_yfq8s"]
+material = SubResource("StandardMaterial3D_cv3d8")
+radius = 0.05
+height = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_anpuf"]
+diffuse_mode = 3
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_4bysq"]
+material = SubResource("StandardMaterial3D_anpuf")
+top_radius = 0.1
+bottom_radius = 0.1
+height = 1.0
+radial_segments = 6
+rings = 0
+
+[node name="candle" type="Node3D"]
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5903, 0)
+amount = 20
+process_material = SubResource("ParticleProcessMaterial_x3k3a")
+draw_pass_1 = SubResource("SphereMesh_yfq8s")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_4bysq")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.616291, 0)

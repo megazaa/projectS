@@ -1,0 +1,50 @@
+[gd_scene load_steps=6 format=3 uid="uid://du3vs0svrdt0x"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qo416"]
+albedo_color = Color(0.442034, 0.207801, 0.131258, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dochb"]
+albedo_color = Color(0.442034, 0.207801, 0.131258, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_woi5t"]
+albedo_color = Color(0.442034, 0.207801, 0.131258, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_aojni"]
+albedo_color = Color(0.725096, 0.504317, 0.274009, 1)
+roughness = 0.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l66gd"]
+albedo_color = Color(0.442034, 0.207801, 0.131258, 1)
+
+[node name="bed" type="Node3D"]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.05713, -0.264404, 0)
+size = Vector3(2.14526, 0.471191, 1)
+material = SubResource("StandardMaterial3D_qo416")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="CSGBox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0295944, -0.0545654, 0.000610352)
+operation = 2
+size = Vector3(2.63399, 0.362061, 0.739746)
+material = SubResource("StandardMaterial3D_dochb")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="CSGBox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0140452, -0.0829726, -0.0540394)
+operation = 2
+size = Vector3(1.81427, 0.427612, 1.29681)
+material = SubResource("StandardMaterial3D_woi5t")
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="CSGBox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.038349, 0.268143, -0.00955236)
+size = Vector3(2.05561, 0.056, 1.024)
+material = SubResource("StandardMaterial3D_aojni")
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="CSGBox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.869841, 0.337689, -0.010233)
+size = Vector3(0.239232, 0.195091, 0.820697)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="CSGBox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.02678, 0.438397, 0.000587106)
+size = Vector3(0.0629425, 0.427612, 1.00226)
+material = SubResource("StandardMaterial3D_l66gd")
